@@ -130,7 +130,12 @@ class Game {
     this.state = Game.STATE_PLAYING;
     this.ui.hideAllMenus();
     this.ui.showHUD();
-    this.ui.checkMobileControls(); // 切換到遊戲中，檢查是否需要顯示虛擬按鍵
+
+    // 重新計算 canvas 尺寸 (解決手機版開始後畫面全黑的問題)
+    this.renderer.resize();
+    
+    this.ui.checkMobileControls();
+
     
     // 1. 生成迷宮
     const size = this.levelSizes[this.currentLevel];

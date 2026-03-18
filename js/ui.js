@@ -430,6 +430,8 @@ class UIManager {
   }
 
   showSettings() {
+    // 記錄是從哪個狀態開啟設定
+    this._settingsCalledFrom = this.game.state;
     this.elements.selectSpeed.value = gameSettings.speed;
     this.elements.selectTheme.value = gameSettings.theme;
     this.elements.selectDifficulty.value = gameSettings.difficulty;
@@ -442,7 +444,6 @@ class UIManager {
     gameSettings.difficulty = this.elements.selectDifficulty.value;
     gameSettings.save();
     
-    // 如果在遊戲中切換速度或主題，立即生效
     if (this.game.player) {
       this.game.player.speed = gameSettings.speed;
     }
@@ -452,9 +453,16 @@ class UIManager {
     
     this.hideMenu('settings');
     
-    // 如果從主選單來的返回主選單，若是暫停進來的則返回暫停，但這裡我們先簡單回主選單，
-    // 因為目前按鈕只設在主選單。如果要在暫停也能開，需要再處理。
-    this.showMenu('main');
+    // 根據開啟設定前的狀態正確返回
+    const from = this._settingsCalledFrom;
+    if (from === Game.STATE_PLAYING) {
+      // 從遅中開啟：隔絕遊戲中，直接關閉設定即可，不顯示任何覆蓋
+      this.checkMobileControls();
+    } else if (from === Game.STATE_PAUSED) {
+      this.showMenu('pause');
+    } else {
+      this.showMenu('main');
+    }
   }
 
   showLeaderboard(level) {
