@@ -231,23 +231,24 @@ class Game {
   }
 
   /**
-   * 回主選單可以保存進度 (休息結算)
+   * 回主選單 (saveCurrent=true 時存當前關, false 時不覆蓋存檔)
    */
-  quitToMenu() {
+  quitToMenu(saveCurrent = true) {
     this.state = Game.STATE_MENU;
     this.timer.pause();
-    if (this._animationFrameId) cancelAnimationFrame(this._animationFrameId); // Changed from animationFrameId
+    if (this._animationFrameId) cancelAnimationFrame(this._animationFrameId);
     
-    // 如果是正在玩，存檔是存「當前關卡重新開始」的狀態
     if (this.player) this.player.destroy();
     
-    Storage.saveGame(this.currentLevel, this.timer.totalTime);
+    if (saveCurrent) {
+      Storage.saveGame(this.currentLevel, this.timer.getTotalTime());
+    }
     this.ui.checkContinueBtn();
     
     this.ui.hideHUD();
     this.ui.hideMenu('pause');
-    this.ui.showMenu('main'); // Changed from 'ending' to 'main' as per original logic
-    this.ui.checkMobileControls(); // 結局時隱藏虛擬按鍵
+    this.ui.showMenu('main');
+    this.ui.checkMobileControls();
   }
 
   /**
@@ -262,12 +263,9 @@ class Game {
     const levelMs = this.timer.getCurrentLevelTime();
     const totalMs = this.timer.getTotalTime();
     
-    // 檢查是否破紀錄 (這關的單關紀錄)
-    if (Storage.isNewRecord(this.currentLevel, levelMs)) {
-      this.ui.showNameEntry();
-    } else {
-      this.ui.showLevelComplete(this.currentLevel, false, levelMs, totalMs);
-    }
+    // 直接調用新的統一過關視窗
+    const isNewRecord = Storage.isNewRecord(this.currentLevel, levelMs);
+    this.ui.showLevelComplete(this.currentLevel, isNewRecord, levelMs, totalMs);
   }
 
   /**
@@ -276,10 +274,8 @@ class Game {
   submitHighScore(name) {
     const levelMs = this.timer.getCurrentLevelTime();
     Storage.saveToLeaderboard(this.currentLevel, name, levelMs);
-    
-    // 關閉輸入框，顯示過關總結
-    this.ui.hideMenu('nameEntry');
-    this.ui.showLevelComplete(this.currentLevel, true, levelMs, this.timer.getTotalTime());
+    // 提交後關閉輸入框，讓玩家直接看到「下一關 / 休息結算」按鈕
+    this.ui.hideRecordEntry();
   }
 
   /**
@@ -301,12 +297,12 @@ class Game {
    */
   restAndSave() {
     if (this.currentLevel < this.maxLevel) {
-      // 先儲存"下一關"的進度
+      // 儲存下一關進度
       Storage.saveGame(this.currentLevel + 1, this.timer.getTotalTime());
     } else {
-      // 全部過關，清空進度
       Storage.clearSave();
     }
-    this.quitToMenu();
+    // 呼叫 quitToMenu 時設為 false，避免覆蓋掉剛剛存的下一關進度
+    this.quitToMenu(false);
   }
 }

@@ -13,7 +13,6 @@ class UIManager {
       pause: document.getElementById('menu-pause'),
       levelComplete: document.getElementById('menu-level-complete'),
       leaderboard: document.getElementById('menu-leaderboard-view'),
-      nameEntry: document.getElementById('menu-name-entry'),
       settings: document.getElementById('menu-settings'),
       help: document.getElementById('menu-help'),
     };
@@ -72,7 +71,11 @@ class UIManager {
       joystickKnob: document.getElementById('joystick-knob'),
       btnSkillDrill: document.getElementById('btn-skill-drill'),
       btnSkillHint: document.getElementById('btn-skill-hint'),
-      btnSkillMark: document.getElementById('btn-skill-mark')
+      btnSkillMark: document.getElementById('btn-skill-mark'),
+      btnSkillSettings: document.getElementById('btn-skill-settings'),
+      // 過關紀錄輸入
+      recordEntry: document.getElementById('record-entry'),
+      inputName: document.getElementById('input-player-name'),
     };
 
     // 搖框狀態
@@ -158,6 +161,25 @@ class UIManager {
     this.bindVirtualKey(this.elements.btnSkillDrill, ' ');
     this.bindVirtualKey(this.elements.btnSkillHint, 'z');
     this.bindVirtualKey(this.elements.btnSkillMark, 'q');
+    
+    // 手機版設定鍵
+    if (this.elements.btnSkillSettings) {
+      this.elements.btnSkillSettings.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        this.showSettings();
+      }, { passive: false });
+      this.elements.btnSkillSettings.addEventListener('mousedown', () => this.showSettings());
+    }
+
+    // 過關紀錄提交
+    const submitBtn = document.getElementById('btn-submit-name');
+    if (submitBtn) {
+      submitBtn.addEventListener('click', () => {
+        let name = this.elements.inputName ? this.elements.inputName.value.trim() : '';
+        if (!name) name = 'Hero';
+        this.game.submitHighScore(name);
+      });
+    }
   }
 
   /**
@@ -368,11 +390,24 @@ class UIManager {
     }
   }
 
-  showLevelComplete(level, isHeroGame, levelTime, totalTime) {
+  showLevelComplete(level, isNewRecord, levelTime, totalTime) {
     this.showMenu('levelComplete');
     this.elements.statLevelTime.textContent = GameTimer.formatTime(levelTime);
     this.elements.statTotalTime.textContent = GameTimer.formatTime(totalTime);
     
+    // 顯示或隱藏紀錄輸入區
+    if (this.elements.recordEntry) {
+      if (isNewRecord) {
+        this.elements.recordEntry.classList.remove('hidden');
+        if (this.elements.inputName) {
+          this.elements.inputName.value = '';
+          this.elements.inputName.focus();
+        }
+      } else {
+        this.elements.recordEntry.classList.add('hidden');
+      }
+    }
+
     if (level === 12) {
       this.elements.completeTitle.textContent = "完成挑戰！🎉";
       this.elements.btnNextLevel.classList.add('hidden');
@@ -383,10 +418,15 @@ class UIManager {
     }
   }
 
+  // showNameEntry is now integrated into showLevelComplete, kept as no-op for safety
   showNameEntry() {
-    this.showMenu('nameEntry');
-    this.elements.inputName.value = '';
-    this.elements.inputName.focus();
+    // handled inside showLevelComplete
+  }
+
+  hideRecordEntry() {
+    if (this.elements.recordEntry) {
+      this.elements.recordEntry.classList.add('hidden');
+    }
   }
 
   showSettings() {

@@ -31,20 +31,19 @@
       <canvas id="gm-minimap" width="150" height="150"></canvas>
     </div>
 
-    <!-- 手機虛擬控制介面 (版面較小時才會顯示) -->
+    <!-- 手機虛擬控制介面 -->
     <div id="mobile-controls" class="hidden">
-      <!-- 左下角類比搖框 -->
+      <!-- 中央類比搖桿 -->
       <div id="joystick-zone">
         <div id="joystick-base">
           <div id="joystick-knob"></div>
         </div>
       </div>
-      <!-- 右下角技能鈕 -->
-      <div class="action-btns">
-        <button id="btn-skill-drill" class="action-btn drill">⛏️<br><span>鑽牆</span></button>
-        <button id="btn-skill-hint" class="action-btn hint">💡<br><span>提示</span></button>
-        <button id="btn-skill-mark" class="action-btn mark">🧀<br><span>記號</span></button>
-      </div>
+      <!-- 圍繞搖桿的功能鍵 (時鐘方位) -->
+      <button id="btn-skill-drill" class="action-btn drill" title="鑽牆">⛏️<br><span>鑽牆</span></button>
+      <button id="btn-skill-hint" class="action-btn hint" title="提示">💡<br><span>提示</span></button>
+      <button id="btn-skill-mark" class="action-btn mark" title="記號">🧀<br><span>記號</span></button>
+      <button id="btn-skill-settings" class="action-btn settings" title="設定">⚙️<br><span>設定</span></button>
     </div>
 
     <!-- 主選單 -->
@@ -69,13 +68,19 @@
       </div>
     </div>
 
-    <!-- 過關慶祝視窗 -->
+    <!-- 過關慶祝視窗 (含新紀錄輸入) -->
     <div id="menu-level-complete" class="overlay hidden">
       <div class="panel">
         <h2 class="subtitle" id="complete-title">關卡完成！</h2>
         <div class="stats-box">
           <p>本關用時: <span id="stat-level-time" class="highlight">00:00.000</span></p>
           <p>總計用時: <span id="stat-total-time">00:00.000</span></p>
+        </div>
+        <!-- 新紀錄輸入區 (破紀錄時顯示) -->
+        <div id="record-entry" class="hidden">
+          <p style="color:#f1c40f;">🏆 新紀錄！請輸入冒險者名稱：</p>
+          <input type="text" id="input-player-name" maxlength="10" placeholder="Hero" class="input-text">
+          <button id="btn-submit-name" class="btn">登錄紀錄</button>
         </div>
         <button id="btn-next-level" class="btn">進入下一關</button>
         <button id="btn-rest" class="btn">休息結算 (存檔)</button>
@@ -122,16 +127,6 @@
       </div>
     </div>
     
-    <!-- 輸入玩家名稱視窗 (破紀錄時) -->
-    <div id="menu-name-entry" class="overlay hidden">
-      <div class="panel">
-        <h2 class="subtitle">新紀錄！</h2>
-        <p>請輸入你的冒險者名稱：</p>
-        <input type="text" id="input-player-name" maxlength="10" placeholder="Hero" class="input-text">
-        <button id="btn-submit-name" class="btn">確認</button>
-        <button id="btn-submit-name" class="btn">確認</button>
-      </div>
-    </div>
 
     <!-- 設定視窗 -->
     <div id="menu-settings" class="overlay hidden">
