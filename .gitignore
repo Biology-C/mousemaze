@@ -1,0 +1,28 @@
+# Node.js
+node_modules/
+dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Project specific
+.gemini/
+.agents/
+.agent/
+_agents/
+_agent/
+brain/
+implementation_plan.md
+task.md
+walkthrough.md
+*.log

@@ -1,0 +1,515 @@
+/* 重置與基本設定 */
+:root {
+  /* 預設暗色主題 (高對比) */
+  --bg-color: #000000;
+  --text-color: #ffffff;
+  --panel-bg: #1a1a24;
+  --panel-border: #4a4a65;
+  --panel-border-inner: #2b2b3d;
+  --btn-bg: #2c3e50;
+  --btn-hover: #34495e;
+  --btn-border: #1a252f;
+  --title-color: #f1c40f;
+  --subtitle-color: #ecf0f1;
+  --input-bg: #111118;
+  --canvas-wall: #1a1a24;
+  --canvas-wall-highlight: #2b2b3d;
+  --canvas-floor: #0a0a0f;
+  --canvas-floor-pattern: #0f0f14;
+}
+
+[data-theme="light"] {
+  /* 亮色主題 (高對比：木質咖啡配色) */
+  --bg-color: #fdfbf7;
+  --text-color: #3e2723;
+  --panel-bg: #f5f0e6;
+  --panel-border: #795548;
+  --panel-border-inner: #d7ccc8;
+  --btn-bg: #efebe4;
+  --btn-hover: #e0d6c8;
+  --btn-border: #6d4c41;
+  --title-color: #d84315;
+  --subtitle-color: #4e342e;
+  --input-bg: #ffffff;
+  --canvas-wall: #795548;
+  --canvas-wall-highlight: #a1887f;
+  --canvas-floor: #f5f0e6;
+  --canvas-floor-pattern: #ebe3d5;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-family: 'DotGothic16', sans-serif;
+  overflow: hidden;
+  user-select: none;
+  position: fixed; /* 防止手機版滾動與彈跳 */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  touch-action: none; /* 禁止所有觸控預設行為（放大、捲動） */
+}
+
+/* 遊戲容器：使用 JS 動態計算的實際可視區域高度 */
+#game-container {
+  position: relative;
+  width: 100vw;
+  height: calc(var(--real-vh, 1vh) * 100);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+/* 遊戲畫布 */
+#game-canvas {
+  /* Canvas 預設樣式，實際尺寸由 JS 動態設定 */
+  display: block;
+  image-rendering: pixelated; /* 確保像素不模糊 */
+}
+
+/* UI 共用類別 */
+.hidden {
+  display: none !important;
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+  overflow-y: auto; /* 內容太長時可滾動 */
+}
+
+/* 面板 (選單底板) */
+.panel {
+  background-color: var(--panel-bg);
+  border: 4px solid var(--panel-border);
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), inset 0 0 10px rgba(0, 0, 0, 0.1);
+  min-width: 300px;
+  image-rendering: pixelated;
+  /* 簡單像素邊框效果 */
+  box-shadow: 
+    4px 0 0 var(--panel-border), -4px 0 0 var(--panel-border), 0 -4px 0 var(--panel-border), 0 4px 0 var(--panel-border),
+    inset 4px 0 0 var(--panel-border-inner), inset -4px 0 0 var(--bg-color), inset 0 -4px 0 var(--bg-color), inset 0 4px 0 var(--panel-border-inner);
+  border: none;
+}
+
+.panel-large {
+  min-width: 500px;
+}
+
+/* 標題字型 (Press Start 2P) */
+.title {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 2rem;
+  color: var(--title-color);
+  text-shadow: 2px 2px 0 #e67e22, 4px 4px 0 #000;
+  margin-bottom: 2rem;
+  line-height: 1.5;
+}
+
+.subtitle {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 1.2rem;
+  color: var(--subtitle-color);
+  text-shadow: 2px 2px 0 rgba(0,0,0,0.5);
+  margin-bottom: 1.5rem;
+}
+
+/* 按鈕 */
+.btn {
+  display: block;
+  width: 100%;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background-color: var(--btn-bg);
+  color: var(--text-color);
+  border: 2px solid var(--btn-border);
+  font-family: 'DotGothic16', sans-serif;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.1s;
+  box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.3);
+}
+
+.btn:hover {
+  background-color: var(--btn-hover);
+  transform: translateY(-2px);
+  box-shadow: inset 0 -6px 0 rgba(0, 0, 0, 0.3);
+}
+
+.btn:active {
+  transform: translateY(2px);
+  box-shadow: inset 0 0px 0 rgba(0, 0, 0, 0.3);
+}
+
+.btn-danger {
+  background-color: #c0392b;
+  border-color: #922b21;
+}
+
+.btn-danger:hover {
+  background-color: #d64736;
+}
+
+.btn-small {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background-color: #34495e;
+  color: #fff;
+  border: none;
+  font-family: 'DotGothic16', sans-serif;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+/* HUD 抬頭顯示器 */
+#hud {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  right: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  z-index: 5;
+  pointer-events: none; /* 讓點擊穿透到 Canvas，除非點到按鈕 */
+}
+
+.hud-item {
+  background-color: rgba(0, 0, 0, 0.7);
+  padding: 10px 20px;
+  border: 2px solid var(--panel-border);
+  border-radius: 4px;
+  font-size: 1.5rem;
+  color: #fff;
+  font-family: 'DotGothic16', sans-serif;
+}
+
+#btn-pause {
+  pointer-events: auto; /* 恢復按鈕的點擊 */
+}
+
+/* GM HUD */
+#gm-hud {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background-color: rgba(0, 0, 0, 0.85);
+  border: 2px solid #e74c3c;
+  border-radius: 4px;
+  padding: 15px;
+  color: #e74c3c;
+  font-family: 'DotGothic16', sans-serif;
+  z-index: 100;
+  pointer-events: none;
+}
+
+#gm-hud h3 {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 0.8rem;
+  margin-bottom: 15px;
+  color: #f1c40f;
+  text-shadow: 1px 1px 0 #000;
+}
+
+#gm-hud p {
+  margin-bottom: 8px;
+  font-size: 1.2rem;
+  color: #fff;
+}
+
+#gm-minimap {
+  margin-top: 15px;
+  border: 2px solid #555;
+  background: #111;
+  display: block;
+}
+
+/* 結算文字標記 */
+.highlight {
+  color: #f1c40f;
+  font-weight: bold;
+  font-size: 1.2em;
+}
+
+.stats-box {
+  background: rgba(0,0,0,0.5);
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 4px;
+  font-size: 1.2rem;
+  line-height: 1.8;
+}
+
+/* 排行榜表格 */
+#leaderboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1.5rem;
+  color: #ecf0f1;
+}
+
+#leaderboard-table th, #leaderboard-table td {
+  padding: 0.8rem;
+  text-align: left;
+  border-bottom: 1px solid #5a5a75;
+}
+
+#leaderboard-table th {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 0.8rem;
+  color: #bdc3c7;
+}
+
+.leaderboard-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+}
+
+/* 輸入框 */
+.input-text, .input-select {
+  width: 100%;
+  padding: 0.8rem;
+  margin: 1rem 0 1.5rem;
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  border: 2px solid var(--panel-border);
+  font-family: 'DotGothic16', sans-serif;
+  font-size: 1.5rem;
+  text-align: center;
+}
+
+.input-text:focus, .input-select:focus {
+  outline: none;
+  border-color: var(--title-color);
+}
+
+/* 設定群組 */
+.setting-group {
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.setting-group label {
+  display: block;
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-color);
+}
+
+.setting-group select {
+  margin: 0;
+}
+
+/* =========================================
+   手機虛擬搖框與技能鈕
+   ========================================= */
+#mobile-controls {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 20;
+}
+
+@media (max-width: 768px) and (orientation: portrait) {
+  #mobile-controls.active {
+    display: block;
+  }
+}
+
+/* 類比搖框 */
+#joystick-zone {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  width: 140px;
+  height: 140px;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+#joystick-base {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%);
+  border: 2px solid rgba(255,255,255,0.25);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#joystick-knob {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.6), rgba(180,180,180,0.4));
+  border: 2px solid rgba(255,255,255,0.5);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  position: absolute;
+  /* 預設居中：(140-56)/2 = 42 */
+  top: 42px;
+  left: 42px;
+  transition: none;
+}
+
+.action-btns {
+  position: absolute;
+  bottom: 20px;
+  right: 15px;
+  width: 150px;
+  height: 150px;
+  pointer-events: auto;
+  opacity: 0.7;
+}
+
+.action-btn {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  background-color: rgba(52, 73, 94, 0.8);
+  border: 2px solid #fff;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  user-select: none;
+  touch-action: manipulation;
+}
+.action-btn span { font-size: 10px; margin-top: 2px; }
+.action-btn:active { background-color: rgba(46, 204, 113, 0.8); transform: scale(0.95); }
+
+.action-btn.drill { top: 0; right: 0; width: 70px; height: 70px; background-color: rgba(231, 76, 60, 0.8); }
+.action-btn.drill:active { background-color: rgba(192, 57, 43, 0.8); }
+.action-btn.hint { top: 80px; right: 80px; }
+.action-btn.mark { top: 80px; right: 0; }
+
+/* =========================================
+   RWD 響應式網頁設計 (手機/小螢幕適配)
+   ========================================= */
+@media (max-width: 768px) {
+  /* 面板與字體縮放 */
+  .panel {
+    min-width: 80vw;
+    padding: 1rem;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  
+  .panel-large {
+    min-width: 90vw;
+  }
+  
+  .title {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .subtitle {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .btn {
+    font-size: 1.2rem;
+    padding: 0.8rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  /* 表格/統計字體 */
+  .stats-box {
+    font-size: 0.9rem;
+    padding: 10px;
+  }
+  
+  th, td {
+    padding: 6px;
+  }
+  
+  /* HUD 調整 */
+  #hud {
+    padding: 5px 10px;
+    font-size: 0.9rem;
+  }
+  
+  .hud-item {
+    margin-right: 10px;
+  }
+  
+  .btn-small {
+    font-size: 0.8rem;
+    padding: 4px 8px;
+  }
+
+  /* 操作說明文字太長時稍微縮小 */
+  #menu-help .stats-box p {
+    font-size: 0.8rem;
+    margin-bottom: 8px;
+  }
+
+  /* 縮小搖桿和技能鈕以節省空間 */
+  #joystick-zone {
+    bottom: 10px;
+    left: 10px;
+    width: 120px;
+    height: 120px;
+  }
+  
+  #joystick-base {
+    width: 120px;
+    height: 120px;
+  }
+
+  #joystick-knob {
+    width: 48px;
+    height: 48px;
+    top: 36px;
+    left: 36px;
+  }
+
+  .action-btns {
+    bottom: 10px;
+    right: 10px;
+    width: 130px;
+    height: 130px;
+  }
+
+  .action-btn {
+    width: 50px;
+    height: 50px;
+    font-size: 16px;
+  }
+  .action-btn span { font-size: 9px; }
+
+  .action-btn.drill { top: 0; right: 0; width: 60px; height: 60px; }
+  .action-btn.hint { top: 70px; right: 70px; }
+  .action-btn.mark { top: 70px; right: 0; }
+}

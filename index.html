@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>像素地城迷宮</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DotGothic16&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- 遊戲主體 -->
+  <div id="game-container">
+    <canvas id="game-canvas"></canvas>
+    
+    <!-- 抬頭顯示器 (HUD) -->
+    <div id="hud" class="hidden">
+      <div class="hud-item">關卡: <span id="hud-level">1</span>/12</div>
+      <div class="hud-item">時間: <span id="hud-time">00:00.000</span></div>
+      <div class="hud-item" id="hud-skill">鑽牆:<span id="hud-drill">3</span> 提示:<span id="hud-hint">5</span></div>
+      <button id="btn-pause" class="btn-small">暫停 (ESC)</button>
+    </div>
+
+    <!-- GM HUD -->
+    <div id="gm-hud" class="hidden">
+      <h3>GM 控制台</h3>
+      <p>速度: <span id="gm-speed">0.2</span></p>
+      <p>道具數: <span id="gm-item-count">0</span></p>
+      <p>迷霧開啟: <span id="gm-fog-status">是</span> (F 切換)</p>
+      <canvas id="gm-minimap" width="150" height="150"></canvas>
+    </div>
+
+    <!-- 手機虛擬控制介面 (版面較小時才會顯示) -->
+    <div id="mobile-controls" class="hidden">
+      <!-- 左下角類比搖框 -->
+      <div id="joystick-zone">
+        <div id="joystick-base">
+          <div id="joystick-knob"></div>
+        </div>
+      </div>
+      <!-- 右下角技能鈕 -->
+      <div class="action-btns">
+        <button id="btn-skill-drill" class="action-btn drill">⛏️<br><span>鑽牆</span></button>
+        <button id="btn-skill-hint" class="action-btn hint">💡<br><span>提示</span></button>
+        <button id="btn-skill-mark" class="action-btn mark">🧀<br><span>記號</span></button>
+      </div>
+    </div>
+
+    <!-- 主選單 -->
+    <div id="menu-main" class="overlay">
+      <div class="panel">
+        <h1 class="title">像素地城<br>迷宮</h1>
+        <button id="btn-start" class="btn">開始新遊戲</button>
+        <button id="btn-continue" class="btn hidden">繼續遊戲</button>
+        <button id="btn-leaderboard" class="btn">排行榜</button>
+        <button id="btn-settings" class="btn">設定</button>
+        <button id="btn-help" class="btn">操作說明</button>
+      </div>
+    </div>
+
+    <!-- 暫停選單 -->
+    <div id="menu-pause" class="overlay hidden">
+      <div class="panel">
+        <h2 class="subtitle">遊戲暫停</h2>
+        <button id="btn-resume" class="btn">繼續遊戲</button>
+        <button id="btn-restart-level" class="btn">重新開始本關</button>
+        <button id="btn-quit" class="btn btn-danger">回主選單</button>
+      </div>
+    </div>
+
+    <!-- 過關慶祝視窗 -->
+    <div id="menu-level-complete" class="overlay hidden">
+      <div class="panel">
+        <h2 class="subtitle" id="complete-title">關卡完成！</h2>
+        <div class="stats-box">
+          <p>本關用時: <span id="stat-level-time" class="highlight">00:00.000</span></p>
+          <p>總計用時: <span id="stat-total-time">00:00.000</span></p>
+        </div>
+        <button id="btn-next-level" class="btn">進入下一關</button>
+        <button id="btn-rest" class="btn">休息結算 (存檔)</button>
+      </div>
+    </div>
+
+    <!-- 排行榜視窗 -->
+    <div id="menu-leaderboard-view" class="overlay hidden">
+      <div class="panel panel-large">
+        <h2 class="subtitle">最佳探索者</h2>
+        <div class="leaderboard-controls">
+          <button id="btn-lb-prev" class="btn-small">&lt;</button>
+          <span id="lb-level-display">關卡 1</span>
+          <button id="btn-lb-next" class="btn-small">&gt;</button>
+        </div>
+        <table id="leaderboard-table">
+          <thead>
+            <tr><th>名次</th><th>名字</th><th>時間</th></tr>
+          </thead>
+          <tbody id="leaderboard-body">
+            <!-- 動態生成 -->
+          </tbody>
+        </table>
+        <button id="btn-lb-close" class="btn">關閉</button>
+      </div>
+    </div>
+    
+    <!-- 操作說明視窗 -->
+    <div id="menu-help" class="overlay hidden">
+      <div class="panel panel-large">
+        <h2 class="subtitle">操作說明</h2>
+        <div class="stats-box" style="text-align: left;">
+          <p>🎮 <b>移動</b>：[W][A][S][D] 或 [方向鍵]</p>
+          <p>⛏️ <b>鑽牆</b>：[空白鍵 Space] (朝面向破壞一道牆，消耗次數)</p>
+          <p>🧀 <b>記號</b>：[Q] 鍵 (原地放置十字記號防迷路)</p>
+          <p>⏸️ <b>暫停</b>：[ESC] 鍵</p>
+          <hr style="border-color:var(--panel-border); margin: 15px 0;">
+          <p style="color:#e74c3c;">🍄 <b>紅香菇</b>：短暫獲得全圖透視能力</p>
+          <p style="color:#3498db;">💎 <b>藍礦石</b>：永久增加視野範圍</p>
+          <p style="color:#f1c40f;">🔼 <b>黃三角</b>：增加 1 次可鑽牆次數</p>
+          <p style="color:#9b59b6;">🌀 <b>紫光圈</b>：雙向遠距離傳送陣</p>
+        </div>
+        <button id="btn-help-close" class="btn">我知道了</button>
+      </div>
+    </div>
+    
+    <!-- 輸入玩家名稱視窗 (破紀錄時) -->
+    <div id="menu-name-entry" class="overlay hidden">
+      <div class="panel">
+        <h2 class="subtitle">新紀錄！</h2>
+        <p>請輸入你的冒險者名稱：</p>
+        <input type="text" id="input-player-name" maxlength="10" placeholder="Hero" class="input-text">
+        <button id="btn-submit-name" class="btn">確認</button>
+        <button id="btn-submit-name" class="btn">確認</button>
+      </div>
+    </div>
+
+    <!-- 設定視窗 -->
+    <div id="menu-settings" class="overlay hidden">
+      <div class="panel">
+        <h2 class="subtitle">遊戲設定</h2>
+        
+        <div class="setting-group">
+          <label>移動速度：</label>
+          <select id="setting-speed" class="input-select">
+            <option value="0.25">快 (0.25)</option>
+            <option value="0.2">中 (0.2)</option>
+            <option value="0.16">慢 (0.16)</option>
+          </select>
+        </div>
+
+        <div class="setting-group">
+          <label>主題色系：</label>
+          <select id="setting-theme" class="input-select">
+            <option value="dark">暗色 (高對比)</option>
+            <option value="light">亮色 (高對比)</option>
+          </select>
+        </div>
+
+        <div class="setting-group">
+          <label>難易度：</label>
+          <select id="setting-difficulty" class="input-select">
+            <option value="heaven">天堂 (道具 x2)</option>
+            <option value="normal">一般</option>
+            <option value="famine">飢荒 (道具 x0.5)</option>
+          </select>
+        </div>
+
+        <button id="btn-save-settings" class="btn">儲存並關閉</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 引入腳本 -->
+  <script src="js/storage.js"></script>
+  <script src="js/settings.js"></script>
+  <script src="js/timer.js"></script>
+  <script src="js/maze.js"></script>
+  <script src="js/items.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/renderer.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
