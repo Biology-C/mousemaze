@@ -182,9 +182,6 @@ class UIManager {
     const knob = this.elements.joystickKnob;
     if (!zone || !base || !knob) return;
 
-    const baseRadius = 70; // 140 / 2
-    const knobRadius = 28; // 56 / 2
-    const maxDist = baseRadius - knobRadius; // 搖框可拖曳最大距離
     const deadZone = 15; // 死區，避免誤觸
 
     const getBaseCenter = () => {
@@ -193,6 +190,9 @@ class UIManager {
     };
 
     const handleMove = (clientX, clientY) => {
+      const baseRadius = base.offsetWidth / 2;
+      const knobRadius = knob.offsetWidth / 2;
+      const maxDist = baseRadius - knobRadius;
       const center = getBaseCenter();
       let dx = clientX - center.x;
       let dy = clientY - center.y;
@@ -232,9 +232,10 @@ class UIManager {
     const handleEnd = () => {
       this._joystickActive = false;
       this._joystickTouchId = null;
-      // 搖框回彈回中
-      knob.style.left = '42px';
-      knob.style.top = '42px';
+      // 搖框回彈回中（動態計算，適應 RWD 不同尺寸）
+      const centerOffset = (base.offsetWidth - knob.offsetWidth) / 2;
+      knob.style.left = centerOffset + 'px';
+      knob.style.top = centerOffset + 'px';
       this._releaseJoystickDir();
     };
 
