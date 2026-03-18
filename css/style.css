@@ -355,9 +355,9 @@ body {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  bottom: var(--joy-bottom);
-  width: var(--joy-size);
-  height: var(--joy-size);
+  bottom: 40px;
+  width: 140px;
+  height: 140px;
   pointer-events: auto;
   touch-action: none;
 }
@@ -384,11 +384,23 @@ body {
   transition: none;
 }
 
-/* 功能鍵：右側直式排列，所有尺寸由 --joy-size 衍生
-   4 顆按鈕垂直置中於搖桿中心高度
-   btn-step = btn-size + gap = joy * 0.43 + joy * 0.08 = joy * 0.51
-   中心 bottom = joy-bottom + joy * 0.5
-   按鈕 bottom = center ± n * step - btn-half
+/* 功能鍵：絕對定位，時鐘方位 */
+/* 
+  搖桿中心在螢幕中央，距底部 40 + 70 = 110px。
+  我們用 calc(50% ± offset) 搭配 bottom 來定位。
+  2點鐘 = 右上 (drill)
+  10點鐘 = 左上 (hint)
+  4點鐘 = 右下 (mark)
+  8點鐘 = 左下 (settings)
+
+  搖桿中心 x = 50vw，y = bottom 110px
+  各鍵偏移距離 r≈105px（從搖桿中心到按鍵中心）
+  2點鐘：sin(60°)=0.866, cos(60°)=0.5  → (+91px, -53px from center)
+  10點鐘：sin(-60°), cos(-60°)        → (-91px, -53px)
+  4點鐘：sin(120°), cos(120°)         → (+91px, +53px)
+  8點鐘：sin(-120°), cos(-120°)       → (-91px, +53px)
+  以 bottom 計算：joystick中心 = bottom: 110px
+  2點:  right = 50% - 91px - 30px = calc(50% - 121px); bottom = 110 + 53 - 30 = 133px
 */
 .action-btn {
   position: absolute;
@@ -411,25 +423,32 @@ body {
 .action-btn span { font-size: var(--btn-label); margin-top: 2px; }
 .action-btn:active { background-color: rgba(46, 204, 113, 0.85); transform: scale(0.92); }
 
-/* 由上到下：鑽牆 → 提示 → 記號 → 設定 */
+/* 2點鐘：鑽牆 (+91px右, +53px上) → left = 50% + 91 - 30 = 50% + 61px，bottom = 110 + 53 - 30 = 133px */
 .action-btn.drill {
-  bottom: calc(var(--joy-bottom) + var(--joy-size) * 1.05);
+  left: calc(50% + 61px);
+  bottom: 133px;
   background-color: rgba(192, 57, 43, 0.85);
 }
 .action-btn.drill:active { background-color: rgba(231, 76, 60, 0.85); }
 
+/* 10點鐘：提示 (-91px左, +53px上) → left = 50% - 91 - 30 = 50% - 121px，bottom = 133px */
 .action-btn.hint {
-  bottom: calc(var(--joy-bottom) + var(--joy-size) * 0.54);
+  left: calc(50% - 121px);
+  bottom: 133px;
   background-color: rgba(39, 174, 96, 0.85);
 }
 
+/* 4點鐘：記號 (+91px右, -53px下) → left = 50% + 61px，bottom = 110 - 53 - 30 = 27px */
 .action-btn.mark {
-  bottom: calc(var(--joy-bottom) + var(--joy-size) * 0.03);
+  left: calc(50% + 61px);
+  bottom: 27px;
   background-color: rgba(41, 128, 185, 0.85);
 }
 
+/* 8點鐘：設定 (-91px左, -53px下) → left = 50% - 121px，bottom = 27px */
 .action-btn.settings {
-  bottom: calc(var(--joy-bottom) - var(--joy-size) * 0.48);
+  left: calc(50% - 121px);
+  bottom: 27px;
   background-color: rgba(100, 100, 100, 0.85);
 }
 
@@ -565,10 +584,36 @@ body {
     margin-bottom: 8px;
   }
 
-  /* 手機搖桿：只改變數，所有尺寸自動依比例縮放 */
-  :root {
-    --joy-size: 30vw;
-    --joy-bottom: 18vh;
-    --btn-right: 4vw;
+  /* 搖桿縮小 (手機螢幕空間有限) */
+  #joystick-zone {
+    bottom: 30px;
+    width: 110px;
+    height: 110px;
   }
+  
+  #joystick-base {
+    width: 110px;
+    height: 110px;
+  }
+
+  #joystick-knob {
+    width: 44px;
+    height: 44px;
+    top: 33px;
+    left: 33px;
+  }
+
+  /* 時鐘功能鍵縮小，搖桿中心在 bottom: 65px (10+55) */
+  .action-btn {
+    width: 52px;
+    height: 52px;
+    font-size: 18px;
+  }
+  .action-btn span { font-size: 9px; }
+
+  /* 搖桿中心 bottom = 30 + 55 = 85px；按鍵偏移縮小為 r≈90px → dx=78, dy=45，按鍵半徑=26 */
+  .action-btn.drill  { left: calc(50% + 52px); bottom: 104px; }
+  .action-btn.hint   { left: calc(50% - 104px); bottom: 104px; }
+  .action-btn.mark   { left: calc(50% + 52px);  bottom: 20px; }
+  .action-btn.settings { left: calc(50% - 104px); bottom: 20px; }
 }
