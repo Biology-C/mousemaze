@@ -122,8 +122,8 @@ class UIManager {
 
     // 支援 ESC 熱鍵暫停
     window.addEventListener('keydown', (e) => {
-      // 只有在遊戲進行中，且沒有在輸入名字時才允許 ESC 暫停
-      if (e.key === 'Escape' && !this.menus.nameEntry.classList.contains('hidden')) return;
+      // 如果正在輸入紀錄名字，不處理 ESC
+      if (e.key === 'Escape' && this.elements.recordEntry && !this.elements.recordEntry.classList.contains('hidden')) return;
       
       if (e.key === 'Escape' && 
           (this.game.state === Game.STATE_PLAYING || this.game.state === Game.STATE_PAUSED)) {
@@ -135,7 +135,7 @@ class UIManager {
     document.getElementById('btn-rest').addEventListener('click', () => this.game.restAndSave());
     this.elements.btnNextLevel.addEventListener('click', () => this.game.startNextLevel());
 
-    // 輸入名稱選單
+    // 輸入名稱 (在 levelComplete 內的 record-entry)
     document.getElementById('btn-submit-name').addEventListener('click', () => {
       let name = this.elements.inputName.value.trim();
       if (!name) name = 'Hero';
@@ -171,15 +171,6 @@ class UIManager {
       this.elements.btnSkillSettings.addEventListener('mousedown', () => this.showSettings());
     }
 
-    // 過關紀錄提交
-    const submitBtn = document.getElementById('btn-submit-name');
-    if (submitBtn) {
-      submitBtn.addEventListener('click', () => {
-        let name = this.elements.inputName ? this.elements.inputName.value.trim() : '';
-        if (!name) name = 'Hero';
-        this.game.submitHighScore(name);
-      });
-    }
   }
 
   /**
