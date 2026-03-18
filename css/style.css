@@ -16,6 +16,14 @@
   --canvas-wall-highlight: #2b2b3d;
   --canvas-floor: #0a0a0f;
   --canvas-floor-pattern: #0f0f14;
+
+  /* 搖桿與技能鈕比例變數 (桌面) */
+  --joy-size: min(140px, 20vw);
+  --joy-bottom: 15vh;
+  --btn-size: calc(var(--joy-size) * 0.43);
+  --btn-font: calc(var(--btn-size) * 0.33);
+  --btn-label: calc(var(--btn-size) * 0.17);
+  --btn-right: 5vw;
 }
 
 [data-theme="light"] {
@@ -324,6 +332,7 @@ body {
 
 /* =========================================
    手機虛擬搖框與技能鈕
+   所有尺寸均由 --joy-size 衍生，依比例縮放
    ========================================= */
 #mobile-controls {
   position: absolute;
@@ -344,68 +353,53 @@ body {
 /* 類比搖桿 — 居中底部 */
 #joystick-zone {
   position: absolute;
-  /* 水平居中 */
   left: 50%;
   transform: translateX(-50%);
-  bottom: 20px;
-  width: 140px;
-  height: 140px;
+  bottom: var(--joy-bottom);
+  width: var(--joy-size);
+  height: var(--joy-size);
   pointer-events: auto;
   touch-action: none;
 }
 
 #joystick-base {
   position: relative;
-  width: 140px;
-  height: 140px;
+  width: 100%;
+  height: 100%;
   border-radius: 50%;
   background: radial-gradient(circle, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.03) 100%);
   border: 2px solid rgba(255,255,255,0.30);
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
 
 #joystick-knob {
-  width: 56px;
-  height: 56px;
+  width: 40%;
+  height: 40%;
   border-radius: 50%;
   background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.65), rgba(180,180,180,0.45));
   border: 2px solid rgba(255,255,255,0.55);
   box-shadow: 0 2px 8px rgba(0,0,0,0.4);
   position: absolute;
-  top: 42px;
-  left: 42px;
+  top: 30%;
+  left: 30%;
   transition: none;
 }
 
-/* 功能鍵：絕對定位，時鐘方位 */
-/* 
-  搖桿中心在螢幕中央，距底部 20 + 70 = 90px。
-  我們用 calc(50% ± offset) 搭配 bottom 來定位。
-  2點鐘 = 右上 (drill)
-  10點鐘 = 左上 (hint)  
-  4點鐘 = 右下 (mark)
-  8點鐘 = 左下 (settings)
-  
-  搖桿中心 x = 50vw，y = bottom 90px
-  各鍵偏移距離 r≈105px（從搖桿中心到按鍵中心）
-  2點鐘：sin(60°)=0.866, cos(60°)=0.5  → (+91px, -53px from center)
-  10點鐘：sin(-60°), cos(-60°)        → (-91px, -53px)
-  4點鐘：sin(120°), cos(120°)         → (+91px, +53px)
-  8點鐘：sin(-120°), cos(-120°)       → (-91px, +53px)
-  以 bottom 計算：joystick中心 = bottom: 90px
-  2點:  right = 50% - 91px - 30px = calc(50% - 121px); bottom = 90 + 53 - 30 = 113px
+/* 功能鍵：右側直式排列，所有尺寸由 --joy-size 衍生
+   4 顆按鈕垂直置中於搖桿中心高度
+   btn-step = btn-size + gap = joy * 0.43 + joy * 0.08 = joy * 0.51
+   中心 bottom = joy-bottom + joy * 0.5
+   按鈕 bottom = center ± n * step - btn-half
 */
 .action-btn {
   position: absolute;
-  width: 60px;
-  height: 60px;
+  right: var(--btn-right);
+  width: var(--btn-size);
+  height: var(--btn-size);
   background-color: rgba(52, 73, 94, 0.85);
   border: 2px solid rgba(255,255,255,0.6);
   border-radius: 50%;
   color: #fff;
-  font-size: 20px;
+  font-size: var(--btn-font);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -413,38 +407,99 @@ body {
   user-select: none;
   touch-action: manipulation;
   pointer-events: auto;
-  /* 中心點對齊：left/bottom 指的是按鍵左上角，需減去半徑 30px */
 }
-.action-btn span { font-size: 10px; margin-top: 2px; }
+.action-btn span { font-size: var(--btn-label); margin-top: 2px; }
 .action-btn:active { background-color: rgba(46, 204, 113, 0.85); transform: scale(0.92); }
 
-/* 2點鐘：鑽牆 (+91px右, +53px上) → left = 50% + 91 - 30 = 50% + 61px，bottom = 90 + 53 - 30 = 113px */
+/* 由上到下：鑽牆 → 提示 → 記號 → 設定 */
 .action-btn.drill {
-  left: calc(50% + 61px);
-  bottom: 113px;
+  bottom: calc(var(--joy-bottom) + var(--joy-size) * 1.05);
   background-color: rgba(192, 57, 43, 0.85);
 }
 .action-btn.drill:active { background-color: rgba(231, 76, 60, 0.85); }
 
-/* 10點鐘：提示 (-91px左, +53px上) → left = 50% - 91 - 30 = 50% - 121px，bottom = 113px */
 .action-btn.hint {
-  left: calc(50% - 121px);
-  bottom: 113px;
+  bottom: calc(var(--joy-bottom) + var(--joy-size) * 0.54);
   background-color: rgba(39, 174, 96, 0.85);
 }
 
-/* 4點鐘：記號 (+91px右, -53px下) → left = 50% + 61px，bottom = 90 - 53 - 30 = 7px */
 .action-btn.mark {
-  left: calc(50% + 61px);
-  bottom: 7px;
+  bottom: calc(var(--joy-bottom) + var(--joy-size) * 0.03);
   background-color: rgba(41, 128, 185, 0.85);
 }
 
-/* 8點鐘：設定 (-91px左, -53px下) → left = 50% - 121px，bottom = 7px */
 .action-btn.settings {
-  left: calc(50% - 121px);
-  bottom: 7px;
+  bottom: calc(var(--joy-bottom) - var(--joy-size) * 0.48);
   background-color: rgba(100, 100, 100, 0.85);
+}
+
+/* 按鈕高亮提示動畫 */
+@keyframes btn-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(241, 196, 15, 0.7); }
+  50% { box-shadow: 0 0 calc(var(--joy-size) * 0.1) calc(var(--joy-size) * 0.05) rgba(241, 196, 15, 0.9); }
+}
+.action-btn.highlight {
+  animation: btn-pulse 0.8s ease-in-out 3;
+}
+
+/* 技能提示氣泡 */
+.skill-tooltip {
+  position: absolute;
+  right: calc(var(--btn-right) + var(--btn-size) + var(--joy-size) * 0.08);
+  padding: calc(var(--joy-size) * 0.06) calc(var(--joy-size) * 0.1);
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  font-size: calc(var(--joy-size) * 0.1);
+  border-radius: calc(var(--joy-size) * 0.05);
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 25;
+  opacity: 0;
+  transform: translateX(10px);
+  transition: opacity 0.3s, transform 0.3s;
+}
+.skill-tooltip.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+/* 右側箭頭 */
+.skill-tooltip::after {
+  content: '';
+  position: absolute;
+  right: calc(var(--joy-size) * -0.06);
+  top: 50%;
+  transform: translateY(-50%);
+  border: calc(var(--joy-size) * 0.03) solid transparent;
+  border-left-color: rgba(0, 0, 0, 0.85);
+}
+
+/* 搖桿提示 (顯示在搖桿上方) */
+.joystick-tooltip {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(var(--joy-bottom) + var(--joy-size) + var(--joy-size) * 0.1);
+  padding: calc(var(--joy-size) * 0.06) calc(var(--joy-size) * 0.1);
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  font-size: calc(var(--joy-size) * 0.1);
+  border-radius: calc(var(--joy-size) * 0.05);
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 25;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.joystick-tooltip.visible { opacity: 1; }
+/* 下箭頭 */
+.joystick-tooltip::after {
+  content: '';
+  position: absolute;
+  bottom: calc(var(--joy-size) * -0.06);
+  left: 50%;
+  transform: translateX(-50%);
+  border: calc(var(--joy-size) * 0.03) solid transparent;
+  border-top-color: rgba(0, 0, 0, 0.85);
 }
 
 /* =========================================
@@ -510,36 +565,10 @@ body {
     margin-bottom: 8px;
   }
 
-  /* 搖桿縮小 (手機螢幕空間有限) */
-  #joystick-zone {
-    bottom: 10px;
-    width: 110px;
-    height: 110px;
+  /* 手機搖桿：只改變數，所有尺寸自動依比例縮放 */
+  :root {
+    --joy-size: 30vw;
+    --joy-bottom: 18vh;
+    --btn-right: 4vw;
   }
-  
-  #joystick-base {
-    width: 110px;
-    height: 110px;
-  }
-
-  #joystick-knob {
-    width: 44px;
-    height: 44px;
-    top: 33px;
-    left: 33px;
-  }
-
-  /* 時鐘功能鍵縮小，搖桿中心在 bottom: 65px (10+55) */
-  .action-btn {
-    width: 52px;
-    height: 52px;
-    font-size: 18px;
-  }
-  .action-btn span { font-size: 9px; }
-
-  /* 搖桿中心 bottom = 10 + 55 = 65px；按鍵偏移縮小為 r≈90px → dx=78, dy=45，按鍵半徑=26 */
-  .action-btn.drill  { left: calc(50% + 52px); bottom: 84px; }
-  .action-btn.hint   { left: calc(50% - 104px); bottom: 84px; }
-  .action-btn.mark   { left: calc(50% + 52px);  bottom: 0px; }
-  .action-btn.settings { left: calc(50% - 104px); bottom: 0px; }
 }

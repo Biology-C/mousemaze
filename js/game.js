@@ -146,6 +146,9 @@ class Game {
     if (this.player) this.player.destroy();
     this.player = new Player(this.maze.start.x, this.maze.start.y, this.renderer.cellSize, this.maze);
 
+    // 2b. 撞牆回呼：顯示鑽牆提示
+    this.player._onBump = () => this.ui.showBumpDrillHint();
+
     // 3. 初始化道具管理器
     this.itemManager = new ItemManager(this.maze, this.player);
     this.player.itemManager = this.itemManager; // 讓角色能呼叫記號功能與拾取判定
@@ -164,7 +167,10 @@ class Game {
     this.ui.updateHUD(this.currentLevel, 0);
     this.ui.updateSkillHUD(this.player.drillCount, this.player.hintCount);
 
-    // 6. 開始主迴圈
+    // 6. 顯示新手技能提示 (僅 Level 1 首次)
+    this.ui.showSkillTooltips();
+
+    // 7. 開始主迴圈
     if (this._animationFrameId) cancelAnimationFrame(this._animationFrameId); // Changed from animationFrameId
     this._animationFrameId = requestAnimationFrame(this.gameLoop); // Changed from loop
   }
