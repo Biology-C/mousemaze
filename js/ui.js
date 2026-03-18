@@ -517,4 +517,143 @@ class UIManager {
       setTimeout(() => msg.remove(), 1000);
     }, 2500);
   }
+
+  // =========================================
+  //  技能提示系統
+  // =========================================
+
+  static TOOLTIP_STORAGE_KEY = 'maze_tooltips_shown';
+
+  /**
+   * 檢查是否需要顯示新手提示（僅 Level 1 首次）
+   */
+  shouldShowTooltips(level) {
+    if (level !== 1) return false;
+    // 非手機不顯示按鈕提示
+    if (window.innerWidth > 768 || window.innerHeight <= window.innerWidth) return false;
+    try {
+      return !localStorage.getItem(UIManager.TOOLTIP_STORAGE_KEY);
+    } catch { return false; }
+  }
+
+  /**
+   * 在 startLevel 後呼叫，依序顯示各技能提示
+   */
+  showSkillTooltips() {
+    if (!this.shouldShowTooltips(this.game.currentLevel)) return;
+
+    const container = this.elements.mobileControls;
+    if (!container) return;
+
+    // 定義提示序列：[目標按鈕class/id, 提示文字, 類型]
+    const sequence = [
+      { type: 'joystick', text: '← 滑動搖桿移動角色 →' },
+      { btn: this.elements.btnSkillMark,  text: '放置記號，標記走過的路' },
+      { btn: this.elements.btnSkillDrill, text: '鑽牆！破壞前方牆壁' },
+      { btn: this.elements.btnSkillHint,  text: '迷路了？顯示路線指引' },
+    ];
+
+    this._tooltipElements = [];
+    let delay = 1500; // 開局 1.5 秒後開始
+
+    sequence.forEach((item, i) => {
+      setTimeout(() => {
+        this._showSingleTooltip(container, item, i);
+      }, delay + i * 2200);
+    });
+
+    // 全部顯示完後標記已看過
+    setTimeout(() => {
+      this._clearAllTooltips();
+      try { localStorage.setItem(UIManager.TOOLTIP_STORAGE_KEY, '1'); } catch {}
+    }, delay + sequence.length * 2200 + 500);
+  }
+
+  _showSingleTooltip(container, item, index) {
+    // 先清除上一個提示
+    this._clearAllTooltips();
+
+    if (item.type === 'joystick') {
+      // 搖桿提示：顯示在搖桿上方
+      const tip = document.createElement('div');
+      tip.className = 'joystick-tooltip';
+      tip.textContent = item.text;
+      container.appendChild(tip);
+      this._tooltipElements.push(tip);
+      requestAnimationFrame(() => tip.classList.add('visible'));
+
+      // 搖桿高亮
+      if (this.elements.joystickBase) {
+        this.elements.joystickBase.style.borderColor = 'rgba(241, 196, 15, 0.8)';
+        this.elements.joystickBase.style.boxShadow = '0 0 15px rgba(241, 196, 15, 0.5)';
+      }
+    } else if (item.btn) {
+      // 按鈕提示：顯示在按鈕左側
+      const tip = document.createElement('div');
+      tip.className = 'skill-tooltip';
+      tip.textContent = item.text;
+
+      // 取得按鈕 bottom 值並對齊
+      const btnStyle = getComputedStyle(item.btn);
+      tip.style.bottom = btnStyle.bottom;
+      container.appendChild(tip);
+      this._tooltipElements.push(tip);
+      requestAnimationFrame(() => tip.classList.add('visible'));
+
+      // 按鈕高亮
+      item.btn.classList.add('highlight');
+      this._tooltipElements.push({ classList: item.btn.classList, isBtn: true });
+    }
+  }
+
+  _clearAllTooltips() {
+    // 還原搖桿樣式
+    if (this.elements.joystickBase) {
+      this.elements.joystickBase.style.borderColor = '';
+      this.elements.joystickBase.style.boxShadow = '';
+    }
+
+    if (!this._tooltipElements) return;
+    this._tooltipElements.forEach(el => {
+      if (el.isBtn) {
+        el.classList.remove('highlight');
+      } else if (el.remove) {
+        el.classList.remove('visible');
+        setTimeout(() => el.remove(), 300);
+      }
+    });
+    this._tooltipElements = [];
+  }
+
+  /**
+   * 撞牆時呼叫：首次撞牆顯示鑽牆提示
+   */
+  showBumpDrillHint() {
+    const key = 'maze_bump_hint_shown';
+    try { if (localStorage.getItem(key)) return; } catch { return; }
+    // 非手機不顯示
+    if (window.innerWidth > 768 || window.innerHeight <= window.innerWidth) return;
+    // 如果新手提示還在播放中就不打斷
+    if (this._tooltipElements && this._tooltipElements.length > 0) return;
+
+    const container = this.elements.mobileControls;
+    const btn = this.elements.btnSkillDrill;
+    if (!container || !btn) return;
+
+    this._tooltipElements = [];
+    const tip = document.createElement('div');
+    tip.className = 'skill-tooltip';
+    tip.textContent = '撞到牆了！試試鑽牆 ⛏️';
+    tip.style.bottom = getComputedStyle(btn).bottom;
+    container.appendChild(tip);
+    this._tooltipElements.push(tip);
+    requestAnimationFrame(() => tip.classList.add('visible'));
+    btn.classList.add('highlight');
+    this._tooltipElements.push({ classList: btn.classList, isBtn: true });
+
+    setTimeout(() => {
+      this._clearAllTooltips();
+      try { localStorage.setItem(key, '1'); } catch {}
+    }, 3000);
+  }
 }
