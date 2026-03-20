@@ -171,6 +171,10 @@ class Game {
     if (n > 18) n = 18;
     this.currentLevel = n;
     
+    // 強制隱藏所有選單並進入遊戲狀態
+    this.ui.hideAllMenus();
+    this.state = Game.STATE_PLAYING;
+    
     // 如果目前不在遊戲中，需要啟動循環
     if (this._animationFrameId) cancelAnimationFrame(this._animationFrameId);
     this._animationFrameId = requestAnimationFrame(this.gameLoop);
