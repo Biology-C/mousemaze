@@ -16,9 +16,9 @@
     
     <!-- 抬頭顯示器 (HUD) -->
     <div id="hud" class="hidden">
-      <div class="hud-item">關卡: <span id="hud-level">1</span>/12</div>
+      <div class="hud-item">關卡: <span id="hud-level">1</span>/18</div>
       <div class="hud-item">時間: <span id="hud-time">00:00.000</span></div>
-      <div class="hud-item" id="hud-skill">鑽牆:<span id="hud-drill">3</span> 提示:<span id="hud-hint">5</span></div>
+      <div class="hud-item" id="hud-skill">鑽牆:<span id="hud-drill">15</span> 提示:<span id="hud-hint">5</span></div>
       <button id="btn-pause" class="btn-small">暫停 (ESC)</button>
     </div>
 
@@ -39,10 +39,10 @@
           <div id="joystick-knob"></div>
         </div>
       </div>
-      <!-- 圍繞搖桿的功能鍵 (時鐘方位) -->
-      <button id="btn-skill-drill" class="action-btn drill" title="鑽牆">⛏️<br><span>鑽牆</span></button>
+      <!-- 圍繞搖桿的功能鍵 -->
+      <button id="btn-skill-drill" class="action-btn drill" title="鑽牆/攻擊">⚡<br><span>動作</span></button>
       <button id="btn-skill-hint" class="action-btn hint" title="提示">💡<br><span>提示</span></button>
-      <button id="btn-skill-mark" class="action-btn mark" title="記號">🧀<br><span>記號</span></button>
+      <button id="btn-skill-mark" class="action-btn mark" title="燈塔">🔦<br><span>燈塔</span></button>
       <button id="btn-skill-settings" class="action-btn settings" title="設定">⚙️<br><span>設定</span></button>
     </div>
 
@@ -68,15 +68,16 @@
       </div>
     </div>
 
-    <!-- 過關慶祝視窗 (含新紀錄輸入) -->
+    <!-- 過關慶祝視窗 -->
     <div id="menu-level-complete" class="overlay hidden">
       <div class="panel">
         <h2 class="subtitle" id="complete-title">關卡完成！</h2>
+        <p id="complete-tutorial-title" class="hidden" style="color:#f1c40f; font-size:1.3rem; margin-bottom:15px;"></p>
         <div class="stats-box">
           <p>本關用時: <span id="stat-level-time" class="highlight">00:00.000</span></p>
           <p>總計用時: <span id="stat-total-time">00:00.000</span></p>
         </div>
-        <!-- 新紀錄輸入區 (破紀錄時顯示) -->
+        <!-- 新紀錄輸入區 -->
         <div id="record-entry" class="hidden">
           <p style="color:#f1c40f;">🏆 新紀錄！請輸入冒險者名稱：</p>
           <input type="text" id="input-player-name" maxlength="10" placeholder="Hero" class="input-text">
@@ -91,6 +92,11 @@
     <div id="menu-leaderboard-view" class="overlay hidden">
       <div class="panel panel-large">
         <h2 class="subtitle">最佳探索者</h2>
+        <!-- 分頁 tab -->
+        <div class="lb-tabs">
+          <button id="lb-tab-level" class="lb-tab active">關卡紀錄</button>
+          <button id="lb-tab-time" class="lb-tab">遊玩時間</button>
+        </div>
         <div class="leaderboard-controls">
           <button id="btn-lb-prev" class="btn-small">&lt;</button>
           <span id="lb-level-display">關卡 1</span>
@@ -114,14 +120,19 @@
         <h2 class="subtitle">操作說明</h2>
         <div class="stats-box" style="text-align: left;">
           <p>🎮 <b>移動</b>：[W][A][S][D] 或 [方向鍵]</p>
-          <p>⛏️ <b>鑽牆</b>：[空白鍵 Space] (朝面向破壞一道牆，消耗次數)</p>
-          <p>🧀 <b>記號</b>：[Q] 鍵 (原地放置十字記號防迷路)</p>
+          <p>⚡ <b>空白鍵</b>：面前有牆→鑽牆(消耗次數)；面前無牆→攻擊(不消耗)</p>
+          <p>🔦 <b>燈塔</b>：[Q] 鍵 (在面前放置燈塔，照亮迷霧，但會變成牆壁)</p>
+          <p>💡 <b>提示</b>：[Z] 鍵 (顯示路線指引)</p>
           <p>⏸️ <b>暫停</b>：[ESC] 鍵</p>
           <hr style="border-color:var(--panel-border); margin: 15px 0;">
           <p style="color:#e74c3c;">🍄 <b>紅香菇</b>：短暫獲得全圖透視能力</p>
           <p style="color:#3498db;">💎 <b>藍礦石</b>：永久增加視野範圍</p>
-          <p style="color:#f1c40f;">🔼 <b>黃三角</b>：增加 1 次可鑽牆次數</p>
+          <p style="color:#f39c12;">🧀 <b>能量起司</b>：增加 1 次可鑽牆次數</p>
           <p style="color:#9b59b6;">🌀 <b>紫光圈</b>：雙向遠距離傳送陣</p>
+          <hr style="border-color:var(--panel-border); margin: 15px 0;">
+          <p style="color:#2ecc71;">🐍 <b>蛇</b>：每30秒隨機出現，被碰到就失敗！</p>
+          <p style="color:#2ecc71;">　　蛇會追蹤燈塔。沒有燈塔時追玩家。</p>
+          <p style="color:#2ecc71;">　　面向蛇身按空白鍵攻擊，3次消滅！</p>
         </div>
         <button id="btn-help-close" class="btn">我知道了</button>
       </div>
@@ -153,9 +164,9 @@
         <div class="setting-group">
           <label>難易度：</label>
           <select id="setting-difficulty" class="input-select">
-            <option value="heaven">天堂 (道具 x2)</option>
-            <option value="normal">一般</option>
-            <option value="famine">飢荒 (道具 x0.5)</option>
+            <option value="heaven">天堂 (道具x2, 鑽牆21次)</option>
+            <option value="normal">一般 (鑽牆15次)</option>
+            <option value="famine">飢荒 (道具x0.5, 鑽牆9次)</option>
           </select>
         </div>
 
@@ -170,6 +181,7 @@
   <script src="js/timer.js"></script>
   <script src="js/maze.js"></script>
   <script src="js/items.js"></script>
+  <script src="js/enemy.js"></script>
   <script src="js/player.js"></script>
   <script src="js/renderer.js"></script>
   <script src="js/ui.js"></script>

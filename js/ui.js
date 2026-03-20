@@ -44,6 +44,7 @@ class UIManager {
       statLevelTime: document.getElementById('stat-level-time'),
       statTotalTime: document.getElementById('stat-total-time'),
       completeTitle: document.getElementById('complete-title'),
+      completeTutorialTitle: document.getElementById('complete-tutorial-title'),
       btnStart: document.getElementById('btn-start'),
       btnContinue: document.getElementById('btn-continue'),
       btnNextLevel: document.getElementById('btn-next-level'),
@@ -51,6 +52,8 @@ class UIManager {
       // 排行榜相關
       lbTableBody: document.getElementById('leaderboard-body'),
       lbLevelDisplay: document.getElementById('lb-level-display'),
+      lbTabLevel: document.getElementById('lb-tab-level'),
+      lbTabTime: document.getElementById('lb-tab-time'),
       inputName: document.getElementById('input-player-name'),
 
       // 設定相關
@@ -81,19 +84,18 @@ class UIManager {
     // 搖框狀態
     this._joystickActive = false;
     this._joystickTouchId = null;
-    this._lastJoystickDir = null; // 上次搖框方向 ('ArrowUp'/'ArrowDown'/'ArrowLeft'/'ArrowRight'/null)
+    this._lastJoystickDir = null;
 
     this.currentLbLevel = 1;
+    this.currentLbTab = 'level'; // 'level' 或 'time'
 
     this.bindEvents();
     this.checkContinueBtn();
     
-    // 定期檢查畫面尺寸，決定是否啟用虛擬按鈕
     window.addEventListener('resize', () => this.checkMobileControls());
   }
 
   checkMobileControls() {
-    // Media query 設定在 < 768px 及 portrait，且遊戲狀態為 PLAYING 時才加入 active class 顯示
     if (this.elements.mobileControls) {
       if (this.game.state === Game.STATE_PLAYING && window.innerWidth <= 768 && window.innerHeight > window.innerWidth) {
         this.elements.mobileControls.classList.add('active');
@@ -120,11 +122,9 @@ class UIManager {
     document.getElementById('btn-restart-level').addEventListener('click', () => this.game.restartCurrentLevel());
     document.getElementById('btn-quit').addEventListener('click', () => this.game.quitToMenu());
 
-    // 支援 ESC 熱鍵暫停
+    // ESC 熱鍵暫停
     window.addEventListener('keydown', (e) => {
-      // 如果正在輸入紀錄名字，不處理 ESC
       if (e.key === 'Escape' && this.elements.recordEntry && !this.elements.recordEntry.classList.contains('hidden')) return;
-      
       if (e.key === 'Escape' && 
           (this.game.state === Game.STATE_PLAYING || this.game.state === Game.STATE_PAUSED)) {
         this.game.togglePause();
@@ -135,7 +135,7 @@ class UIManager {
     document.getElementById('btn-rest').addEventListener('click', () => this.game.restAndSave());
     this.elements.btnNextLevel.addEventListener('click', () => this.game.startNextLevel());
 
-    // 輸入名稱 (在 levelComplete 內的 record-entry)
+    // 輸入名稱
     document.getElementById('btn-submit-name').addEventListener('click', () => {
       let name = this.elements.inputName.value.trim();
       if (!name) name = 'Hero';
@@ -148,16 +148,30 @@ class UIManager {
       if (this.currentLbLevel > 1) this.showLeaderboard(this.currentLbLevel - 1);
     });
     document.getElementById('btn-lb-next').addEventListener('click', () => {
-      if (this.currentLbLevel < 12) this.showLeaderboard(this.currentLbLevel + 1);
+      if (this.currentLbLevel < 18) this.showLeaderboard(this.currentLbLevel + 1);
     });
+
+    // 排行榜分頁 tab
+    if (this.elements.lbTabLevel) {
+      this.elements.lbTabLevel.addEventListener('click', () => {
+        this.currentLbTab = 'level';
+        this.showLeaderboard(this.currentLbLevel);
+      });
+    }
+    if (this.elements.lbTabTime) {
+      this.elements.lbTabTime.addEventListener('click', () => {
+        this.currentLbTab = 'time';
+        this.showPlayTimeLeaderboard();
+      });
+    }
 
     // 設定選單
     this.elements.btnSaveSettings.addEventListener('click', () => this.saveSettings());
 
-    // 搖框事件綁定
+    // 搖框
     this.initJoystick();
     
-    // 技能鈕事件綁定
+    // 技能鈕
     this.bindVirtualKey(this.elements.btnSkillDrill, ' ');
     this.bindVirtualKey(this.elements.btnSkillHint, 'z');
     this.bindVirtualKey(this.elements.btnSkillMark, 'q');
@@ -170,22 +184,18 @@ class UIManager {
       }, { passive: false });
       this.elements.btnSkillSettings.addEventListener('mousedown', () => this.showSettings());
     }
-
   }
 
-  /**
-   * 初始化虛擬搖框
-   */
   initJoystick() {
     const zone = this.elements.joystickZone;
     const base = this.elements.joystickBase;
     const knob = this.elements.joystickKnob;
     if (!zone || !base || !knob) return;
 
-    const baseRadius = 70; // 140 / 2
-    const knobRadius = 28; // 56 / 2
-    const maxDist = baseRadius - knobRadius; // 搖框可拖曳最大距離
-    const deadZone = 15; // 死區，避免誤觸
+    const baseRadius = 70;
+    const knobRadius = 28;
+    const maxDist = baseRadius - knobRadius;
+    const deadZone = 15;
 
     const getBaseCenter = () => {
       const rect = base.getBoundingClientRect();
@@ -198,23 +208,19 @@ class UIManager {
       let dy = clientY - center.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
 
-      // 限制在圓形範圍內
       if (dist > maxDist) {
         dx = (dx / dist) * maxDist;
         dy = (dy / dist) * maxDist;
       }
 
-      // 更新搖框渲染位置
       knob.style.left = (baseRadius + dx - knobRadius) + 'px';
       knob.style.top = (baseRadius + dy - knobRadius) + 'px';
 
-      // 計算方向
       if (dist < deadZone) {
         this._releaseJoystickDir();
         return;
       }
 
-      // 判斷角度 -> 方向
       const angle = Math.atan2(dy, dx) * (180 / Math.PI);
       let newDir = null;
       if (angle >= -45 && angle < 45) newDir = 'ArrowRight';
@@ -232,7 +238,6 @@ class UIManager {
     const handleEnd = () => {
       this._joystickActive = false;
       this._joystickTouchId = null;
-      // 搖框回彈回中
       knob.style.left = '42px';
       knob.style.top = '42px';
       this._releaseJoystickDir();
@@ -240,7 +245,7 @@ class UIManager {
 
     zone.addEventListener('touchstart', (e) => {
       e.preventDefault();
-      if (this._joystickActive) return; // 已有一個觸控點
+      if (this._joystickActive) return;
       const t = e.changedTouches[0];
       this._joystickActive = true;
       this._joystickTouchId = t.identifier;
@@ -267,7 +272,6 @@ class UIManager {
     });
     zone.addEventListener('touchcancel', handleEnd);
 
-    // 滑鼠支援 (電腦除錯用)
     let mouseDown = false;
     zone.addEventListener('mousedown', (e) => {
       mouseDown = true;
@@ -288,9 +292,6 @@ class UIManager {
     this._lastJoystickDir = null;
   }
 
-  /**
-   * 封裝虛擬按鈕事件綁定
-   */
   bindVirtualKey(el, key) {
     if (!el) return;
     
@@ -306,7 +307,6 @@ class UIManager {
 
     el.addEventListener('touchstart', triggerDown, { passive: false });
     el.addEventListener('touchend', triggerUp, { passive: false });
-    // 滑鼠支援
     el.addEventListener('mousedown', triggerDown);
     el.addEventListener('mouseup', triggerUp);
     el.addEventListener('mouseleave', triggerUp);
@@ -348,10 +348,10 @@ class UIManager {
 
   updateSkillHUD(drillCount, hintCount) {
     if (this.hud.drill) {
-      this.hud.drill.textContent = drillCount;
+      this.hud.drill.textContent = drillCount === Infinity ? '∞' : drillCount;
     }
     if (this.hud.hint) {
-      this.hud.hint.textContent = hintCount === Infinity ? '無限' : hintCount;
+      this.hud.hint.textContent = hintCount === Infinity ? '∞' : hintCount;
     }
   }
 
@@ -374,19 +374,33 @@ class UIManager {
 
   checkContinueBtn() {
     const save = Storage.loadGame();
-    if (save && save.level > 1 && save.level <= 12) {
+    if (save && save.level > 1 && save.level <= 18) {
       this.elements.btnContinue.classList.remove('hidden');
     } else {
       this.elements.btnContinue.classList.add('hidden');
     }
   }
 
-  showLevelComplete(level, isNewRecord, levelTime, totalTime) {
+  /**
+   * 過關畫面（含教學稱號）
+   */
+  showLevelComplete(level, isNewRecord, levelTime, totalTime, tutorialTitle) {
     this.showMenu('levelComplete');
     this.elements.statLevelTime.textContent = GameTimer.formatTime(levelTime);
     this.elements.statTotalTime.textContent = GameTimer.formatTime(totalTime);
     
-    // 顯示或隱藏紀錄輸入區
+    // 教學稱號
+    const titleEl = this.elements.completeTutorialTitle;
+    if (titleEl) {
+      if (tutorialTitle) {
+        titleEl.textContent = `🏆 獲得稱號：${tutorialTitle}`;
+        titleEl.classList.remove('hidden');
+      } else {
+        titleEl.classList.add('hidden');
+      }
+    }
+
+    // 紀錄輸入
     if (this.elements.recordEntry) {
       if (isNewRecord) {
         this.elements.recordEntry.classList.remove('hidden');
@@ -399,7 +413,7 @@ class UIManager {
       }
     }
 
-    if (level === 12) {
+    if (level === 18) {
       this.elements.completeTitle.textContent = "完成挑戰！🎉";
       this.elements.btnNextLevel.classList.add('hidden');
     } else {
@@ -409,10 +423,7 @@ class UIManager {
     }
   }
 
-  // showNameEntry is now integrated into showLevelComplete, kept as no-op for safety
-  showNameEntry() {
-    // handled inside showLevelComplete
-  }
+  showNameEntry() {}
 
   hideRecordEntry() {
     if (this.elements.recordEntry) {
@@ -421,7 +432,6 @@ class UIManager {
   }
 
   showSettings() {
-    // 記錄是從哪個狀態開啟設定
     this._settingsCalledFrom = this.game.state;
     this.elements.selectSpeed.value = gameSettings.speed;
     this.elements.selectTheme.value = gameSettings.theme;
@@ -444,10 +454,8 @@ class UIManager {
     
     this.hideMenu('settings');
     
-    // 根據開啟設定前的狀態正確返回
     const from = this._settingsCalledFrom;
     if (from === Game.STATE_PLAYING) {
-      // 從遅中開啟：隔絕遊戲中，直接關閉設定即可，不顯示任何覆蓋
       this.checkMobileControls();
     } else if (from === Game.STATE_PAUSED) {
       this.showMenu('pause');
@@ -456,23 +464,38 @@ class UIManager {
     }
   }
 
+  /**
+   * 關卡排行榜
+   */
   showLeaderboard(level) {
     this.currentLbLevel = level;
+    this.currentLbTab = 'level';
     this.elements.lbLevelDisplay.textContent = `關卡 ${level}`;
     
+    // 更新 tab 樣式
+    if (this.elements.lbTabLevel) this.elements.lbTabLevel.classList.add('active');
+    if (this.elements.lbTabTime) this.elements.lbTabTime.classList.remove('active');
+    // 顯示關卡切換按鈕
+    document.getElementById('btn-lb-prev').style.display = '';
+    document.getElementById('btn-lb-next').style.display = '';
+    this.elements.lbLevelDisplay.style.display = '';
+
     const data = Storage.getLeaderboard(level);
     this.elements.lbTableBody.innerHTML = '';
+    
+    // 更新表頭
+    const thead = document.querySelector('#leaderboard-table thead tr');
+    if (thead) thead.innerHTML = '<th>名次</th><th>名字</th><th>時間</th>';
     
     if (data.length === 0) {
       this.elements.lbTableBody.innerHTML = '<tr><td colspan="3" style="text-align:center">尚無紀錄</td></tr>';
     } else {
       data.forEach((row, idx) => {
         const tr = document.createElement('tr');
-        // 前三名給特別顏色
         let rankColor = '#bdc3c7';
-        if (idx === 0) rankColor = '#f1c40f'; // 金
-        else if (idx === 1) rankColor = '#e67e22'; // 銀 (橘代)
-        else if (idx === 2) rankColor = '#d35400'; // 銅
+        if (idx === 0) rankColor = '#f1c40f';
+        else if (idx === 1) rankColor = '#e67e22';
+        else if (idx === 2) rankColor = '#d35400';
         
         tr.innerHTML = `
           <td style="color:${rankColor};font-weight:bold;">#${idx + 1}</td>
@@ -484,6 +507,90 @@ class UIManager {
     }
     
     this.showMenu('leaderboard');
+  }
+
+  /**
+   * 遊玩時間排行榜
+   */
+  showPlayTimeLeaderboard() {
+    this.currentLbTab = 'time';
+    
+    // 更新 tab 樣式
+    if (this.elements.lbTabLevel) this.elements.lbTabLevel.classList.remove('active');
+    if (this.elements.lbTabTime) this.elements.lbTabTime.classList.add('active');
+    // 隱藏關卡切換按鈕
+    document.getElementById('btn-lb-prev').style.display = 'none';
+    document.getElementById('btn-lb-next').style.display = 'none';
+    this.elements.lbLevelDisplay.textContent = '遊玩時間';
+
+    const data = Storage.getPlayTimeRecords();
+    this.elements.lbTableBody.innerHTML = '';
+    
+    // 更新表頭
+    const thead = document.querySelector('#leaderboard-table thead tr');
+    if (thead) thead.innerHTML = '<th>名次</th><th>名字</th><th>時間</th><th>稱號</th>';
+    
+    if (data.length === 0) {
+      this.elements.lbTableBody.innerHTML = '<tr><td colspan="4" style="text-align:center">尚無紀錄</td></tr>';
+    } else {
+      data.forEach((row, idx) => {
+        const tr = document.createElement('tr');
+        let rankColor = '#bdc3c7';
+        if (idx === 0) rankColor = '#f1c40f';
+        else if (idx === 1) rankColor = '#e67e22';
+        else if (idx === 2) rankColor = '#d35400';
+        
+        tr.innerHTML = `
+          <td style="color:${rankColor};font-weight:bold;">#${idx + 1}</td>
+          <td>${row.name}</td>
+          <td>${GameTimer.formatTime(row.totalMs)}</td>
+          <td>${row.title || ''}</td>
+        `;
+        this.elements.lbTableBody.appendChild(tr);
+      });
+    }
+    
+    this.showMenu('leaderboard');
+  }
+
+  /**
+   * 顯示遊戲中的浮動訊息（蛇出現、被吃、困死等）
+   * @param {string} text 訊息文字
+   * @param {Function} onDismiss 訊息消失後的回呼
+   */
+  showGameMessage(text, onDismiss) {
+    const msg = document.createElement('div');
+    msg.textContent = text;
+    msg.style.cssText = `
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.9);
+      color: #fff;
+      font-family: 'DotGothic16', sans-serif;
+      font-size: 1.5rem;
+      padding: 1.5rem 2.5rem;
+      border: 3px solid #e74c3c;
+      border-radius: 8px;
+      z-index: 999;
+      text-shadow: 0 0 10px rgba(231, 76, 60, 0.5);
+      animation: cheatFadeIn 0.3s ease;
+      max-width: 80vw;
+      text-align: center;
+    `;
+    document.body.appendChild(msg);
+
+    const duration = onDismiss ? 2500 : 500;
+
+    setTimeout(() => {
+      msg.style.transition = 'opacity 0.8s ease';
+      msg.style.opacity = '0';
+      setTimeout(() => {
+        msg.remove();
+        if (onDismiss) onDismiss();
+      }, 800);
+    }, duration);
   }
 
   /**

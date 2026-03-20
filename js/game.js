@@ -13,7 +13,7 @@ class Game {
   constructor() {
     this.state = Game.STATE_MENU;
     this.currentLevel = 1;
-    this.maxLevel = 12;
+    this.maxLevel = 18; // 6 教學 + 12 原關卡
     
     // 模組
     this.ui = new UIManager(this);
@@ -22,8 +22,9 @@ class Game {
     this.maze = null;
     this.player = null;
     this.itemManager = null;
+    this.enemyManager = null;
 
-    // 設定計時器回呼更新 UI (每幀更新)
+    // 設定計時器回呼更新 UI
     this.timer.onTick = (ms) => {
       this.ui.updateHUD(this.currentLevel, ms);
       if (this.player) {
@@ -31,10 +32,23 @@ class Game {
       }
     };
 
-    // 每關的迷宮尺寸設定
-    // 1-12 關漸增
+    // 教學關配置 (前 6 關)
+    this.tutorialConfig = [
+      null, // padding
+      { name: '移動入門', size: 10, desc: '使用方向鍵或 WASD 移動到金色出口！', title: '🐾 初學者' },
+      { name: '鑽牆技巧', size: 12, desc: '面向牆壁按空白鍵鑽牆！撿起🧀能量起司增加次數。', title: '⛏️ 鑽洞鼠' },
+      { name: '燈塔記號', size: 12, desc: '按 Q 在面前放置燈塔！照亮迷霧，但會變成牆壁。', title: '💡 燈塔守衛' },
+      { name: '道具收集', size: 14, desc: '收集紅香菇🍄透視、藍礦石💎增視野、能量起司🧀增鑽牆！', title: '🎒 探險家' },
+      { name: '傳送與提示', size: 16, desc: '踩上紫色傳送陣移動！按 Z 使用路線提示。', title: '🌀 時空旅者' },
+      { name: '蛇出沒注意', size: 16, desc: '躲避蛇頭！面向蛇身按空白鍵攻擊，3次消滅！用燈塔誘敵。', title: '⚔️ 勇者鼠' },
+    ];
+
+    // 正式關卡（第 7-18 關）迷宮尺寸
     this.levelSizes = [
       0, // padding (index 0不用)
+      // 教學關 1-6
+      10, 12, 12, 14, 16, 16,
+      // 正式關 7-18 (原 1-12)
       30, 33, 36, 39, 42, 45, 48, 51, 55, 59, 63, 67
     ];
 
@@ -94,11 +108,18 @@ class Game {
         this._gmIndex = 0;
       }
 
-      // 如果是 GM 模式，允許按 F 鍵切換迷霧
+      // GM 模式按 F 切換迷霧
       if (this.isGM && (e.key === 'f' || e.key === 'F')) {
         this.renderer.disableFog = !this.renderer.disableFog;
       }
     });
+  }
+
+  /**
+   * 判斷是否為教學關
+   */
+  isTutorialLevel() {
+    return this.currentLevel >= 1 && this.currentLevel <= 6;
   }
 
   /**
@@ -107,7 +128,7 @@ class Game {
   startNewGame() {
     this.currentLevel = 1;
     this.timer.setTotalTime(0);
-    Storage.clearSave(); // 清除舊存檔
+    Storage.clearSave();
     this.startLevel();
   }
 
@@ -131,49 +152,81 @@ class Game {
     this.ui.hideAllMenus();
     this.ui.showHUD();
 
-    // 重新計算 canvas 尺寸 (解決手機版開始後畫面全黑的問題)
     this.renderer.resize();
-    
     this.ui.checkMobileControls();
 
-    
     // 1. 生成迷宮
     const size = this.levelSizes[this.currentLevel];
     this.maze = new Maze(size, size);
     this.maze.generate();
 
-    // 2. 初始化角色 (放在迷宮起點)
+    // 2. 初始化角色
     if (this.player) this.player.destroy();
     this.player = new Player(this.maze.start.x, this.maze.start.y, this.renderer.cellSize, this.maze);
 
     // 3. 初始化道具管理器
     this.itemManager = new ItemManager(this.maze, this.player);
-    this.player.itemManager = this.itemManager; // 讓角色能呼叫記號功能與拾取判定
-    this.itemManager.generateItems(this.currentLevel);
+    this.player.itemManager = this.itemManager;
 
-    // 如果金手指已啟動，保持無限鑽牆
+    if (this.isTutorialLevel()) {
+      this.itemManager.generateTutorialItems(this.currentLevel);
+    } else {
+      this.itemManager.generateItems(this.currentLevel);
+    }
+
+    // 4. 初始化敵人管理器（教學第 6 關和正式關才有蛇）
+    this.enemyManager = new EnemyManager(this.maze, this.player, this.itemManager);
+    this.player.enemyManager = this.enemyManager;
+
+    // 蛇出現提示
+    this.enemyManager.onSnakeSpawn = () => {
+      this.ui.showGameMessage('🐍 我的迷宮裡有條蛇');
+    };
+
+    // 蛇碰到玩家 → 失敗
+    this.enemyManager.onPlayerEaten = () => {
+      this.handlePlayerDeath('🐍 這隻老鼠被蛇吃了。');
+    };
+
+    if (this.isTutorialLevel() && this.currentLevel === 6) {
+      // 教學第 6 關：直接生成一隻教學蛇
+      this.enemyManager.spawnSnake();
+    } else if (this.isTutorialLevel()) {
+      // 教學 1-5 關不生蛇，停止計時器
+      this.enemyManager.spawnInterval = Infinity;
+    }
+    // 正式關（7+）保持每 30 秒生成
+
+    // 如果金手指已啟動
     if (this._cheatActivated) {
       this.player.drillCount = Infinity;
     }
 
-    // 4. 重置本關計時器
+    // 5. 重置計時器
     this.timer.resetLevel();
     this.timer.start();
 
-    // 5. 初始化 UI 狀態
+    // 6. 更新 HUD
     this.ui.updateHUD(this.currentLevel, 0);
     this.ui.updateSkillHUD(this.player.drillCount, this.player.hintCount);
 
-    // 6. 開始主迴圈
-    if (this._animationFrameId) cancelAnimationFrame(this._animationFrameId); // Changed from animationFrameId
-    this._animationFrameId = requestAnimationFrame(this.gameLoop); // Changed from loop
+    // 7. 教學關 -> 顯示教學提示
+    if (this.isTutorialLevel()) {
+      const config = this.tutorialConfig[this.currentLevel];
+      if (config) {
+        this.ui.showGameMessage(`📖 ${config.name}：${config.desc}`);
+      }
+    }
+
+    // 8. 開始主迴圈
+    if (this._animationFrameId) cancelAnimationFrame(this._animationFrameId);
+    this._animationFrameId = requestAnimationFrame(this.gameLoop);
   }
 
   /**
    * 主迴圈 (Game Loop)
    */
-  gameLoop() { // Changed from loop
-    // 暫停檢查
+  gameLoop() {
     if (this.state !== Game.STATE_PLAYING) {
       this._animationFrameId = requestAnimationFrame(this.gameLoop);
       return;
@@ -182,14 +235,27 @@ class Game {
     // 玩家更新
     this.player.update();
 
+    // 敵人更新
+    if (this.enemyManager) {
+      this.enemyManager.update();
+    }
+
+    // 困死偵測（放燈塔後）
+    if (this.itemManager && !this.player.isMoving) {
+      if (this.itemManager.isPlayerTrapped(this.player.x, this.player.y)) {
+        this.handlePlayerDeath('🧱 這隻老鼠把自己困死了。');
+        return;
+      }
+    }
+
     // 更新 HUD
     this.ui.updateHUD(this.currentLevel, this.timer.getCurrentLevelTime());
     this.ui.updateSkillHUD(this.player.drillCount, this.player.hintCount);
 
     // 渲染畫面
-    this.renderer.render(this.maze, this.player, this.itemManager);
+    this.renderer.render(this.maze, this.player, this.itemManager, this.enemyManager);
 
-    // 渲染 GM HUD
+    // GM HUD
     if (this.isGM) {
       this.ui.updateGMHUD(
         this.player.speed, 
@@ -204,7 +270,6 @@ class Game {
       this.handleLevelComplete();
     }
 
-    // 除非退回主選單，否則一直跑迴圈保持畫面刷新
     if (this.state !== Game.STATE_MENU) {
       this._animationFrameId = requestAnimationFrame(this.gameLoop);
     }
@@ -218,12 +283,11 @@ class Game {
       this.state = Game.STATE_PAUSED;
       this.timer.pause();
       this.ui.showMenu('pause');
-      // 畫面變成半透明的選單底色
     } else if (this.state === Game.STATE_PAUSED) {
       this.state = Game.STATE_PLAYING;
       this.timer.start();
       this.ui.hideMenu('pause');
-      this.ui.checkMobileControls(); // 恢復時檢查顯示
+      this.ui.checkMobileControls();
     }
   }
 
@@ -231,12 +295,11 @@ class Game {
    * 重新開始本關
    */
   restartCurrentLevel() {
-    // 扣回這關尚未過關的時間
     this.startLevel();
   }
 
   /**
-   * 回主選單 (saveCurrent=true 時存當前關, false 時不覆蓋存檔)
+   * 回主選單
    */
   quitToMenu(saveCurrent = true) {
     this.state = Game.STATE_MENU;
@@ -257,6 +320,19 @@ class Game {
   }
 
   /**
+   * 玩家死亡（被蛇吃、困死）→ 顯示訊息、重新開始本關
+   */
+  handlePlayerDeath(message) {
+    this.state = Game.STATE_PAUSED;
+    this.timer.pause();
+    this.player.disableControl();
+
+    this.ui.showGameMessage(message, () => {
+      this.restartCurrentLevel();
+    });
+  }
+
+  /**
    * 過關邏輯
    */
   handleLevelComplete() {
@@ -264,13 +340,18 @@ class Game {
     this.timer.commitLevel();
     this.player.disableControl();
     
-    // 結算畫面
     const levelMs = this.timer.getCurrentLevelTime();
     const totalMs = this.timer.getTotalTime();
     
-    // 直接調用新的統一過關視窗
+    // 教學關稱號
+    let tutorialTitle = null;
+    if (this.isTutorialLevel()) {
+      const config = this.tutorialConfig[this.currentLevel];
+      if (config) tutorialTitle = config.title;
+    }
+
     const isNewRecord = Storage.isNewRecord(this.currentLevel, levelMs);
-    this.ui.showLevelComplete(this.currentLevel, isNewRecord, levelMs, totalMs);
+    this.ui.showLevelComplete(this.currentLevel, isNewRecord, levelMs, totalMs, tutorialTitle);
   }
 
   /**
@@ -279,7 +360,8 @@ class Game {
   submitHighScore(name) {
     const levelMs = this.timer.getCurrentLevelTime();
     Storage.saveToLeaderboard(this.currentLevel, name, levelMs);
-    // 提交後關閉輸入框，讓玩家直接看到「下一關 / 休息結算」按鈕
+    // 同時記錄遊玩時間
+    Storage.savePlayTime(name, this.timer.getTotalTime());
     this.ui.hideRecordEntry();
   }
 
@@ -292,7 +374,6 @@ class Game {
       Storage.saveGame(this.currentLevel, this.timer.getTotalTime());
       this.startLevel();
     } else {
-      // 已經是第12關
       this.quitToMenu();
     }
   }
@@ -302,12 +383,10 @@ class Game {
    */
   restAndSave() {
     if (this.currentLevel < this.maxLevel) {
-      // 儲存下一關進度
       Storage.saveGame(this.currentLevel + 1, this.timer.getTotalTime());
     } else {
       Storage.clearSave();
     }
-    // 呼叫 quitToMenu 時設為 false，避免覆蓋掉剛剛存的下一關進度
     this.quitToMenu(false);
   }
 }

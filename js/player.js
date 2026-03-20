@@ -46,7 +46,7 @@ class Player {
     this.isTeleporting = false;
     
     // 技能與道具狀態
-    this.drillCount = 3; // 每關鑽洞次數
+    this.drillCount = this._initializeDrillCount(); // 每關鑽洞次數（依難度）
     this.permanentSightRadius = 6.5; // 基礎視野
     this.hasMagicVision = false; // 是否獲得全圖透視
     this.visionTimer = 0;
@@ -70,10 +70,19 @@ class Player {
     this.enableControl();
   }
 
+  _initializeDrillCount() {
+    switch (gameSettings.difficulty) {
+      case 'heaven': return 21;
+      case 'famine': return 9;
+      case 'normal': 
+      default: return 15;
+    }
+  }
+
   _initializeHintCount() {
     switch (gameSettings.difficulty) {
       case 'heaven': return Infinity;
-      case 'famine': return 2; // 對應「困難」
+      case 'famine': return 2;
       case 'normal': 
       default: return 5;
     }
@@ -99,16 +108,23 @@ class Player {
     }
     
     // 單次按下觸發的技能
-    // Q : 放麵包屑記號
+    // Q : 放燈塔記號（面向方向下一格）
     if ((e.key === 'q' || e.key === 'Q') && !this.isMoving) {
       if (this.itemManager) {
-        this.itemManager.addBreadcrumb(this.x, this.y);
+        const dir = this.maze.DIRECTIONS[this.facing];
+        const bx = this.x + dir[0];
+        const by = this.y + dir[1];
+        // 確保目標格在迷宮範圍內且面前沒有牆
+        const currCell = this.maze.getCell(this.x, this.y);
+        if (bx >= 0 && by >= 0 && bx < this.maze.width && by < this.maze.height && currCell && !currCell.walls[this.facing]) {
+          this.itemManager.addBreadcrumb(bx, by, this.maze);
+        }
       }
     }
     
-    // Space : 鑽洞 (朝面向方向破壞牆壁)
-    if (e.key === ' ' && !this.isMoving && !this.isBumping && this.drillCount > 0) {
-      this._useDrill();
+    // Space : 面前是牆→鑽牆(扣次數)；非牆→攻擊(不扣次數，有蛇打蛇)
+    if (e.key === ' ' && !this.isMoving && !this.isBumping) {
+      this._useSpaceAction();
       e.preventDefault();
     }
     
@@ -284,6 +300,24 @@ class Player {
   }
 
   /**
+   * 空白鍵統一動作：面前是牆→鑽牆(扣次數)；非牆→攻擊(不扣次數)
+   */
+  _useSpaceAction() {
+    const currCell = this.maze.getCell(this.x, this.y);
+    const wallIdx = this.facing;
+    
+    if (currCell && currCell.walls[wallIdx]) {
+      // 面前有牆 → 鑽牆
+      if (this.drillCount > 0) {
+        this._useDrill();
+      }
+    } else {
+      // 面前無牆 → 攻擊（不扣鑽牆次數）
+      this._useAttack();
+    }
+  }
+
+  /**
    * 使用鑽洞技能：打通面向前方的牆壁
    */
   _useDrill() {
@@ -293,28 +327,43 @@ class Player {
     let wallIdx = this.facing; 
     let oppWallIdx = (this.facing + 2) % 4;
     
-    if (this.facing === 0) targetY -= 1; // 往上
-    if (this.facing === 1) targetX += 1; // 往右
-    if (this.facing === 2) targetY += 1; // 往下
-    if (this.facing === 3) targetX -= 1; // 往左
+    if (this.facing === 0) targetY -= 1;
+    if (this.facing === 1) targetX += 1;
+    if (this.facing === 2) targetY += 1;
+    if (this.facing === 3) targetX -= 1;
     
-    // 檢查是否超出邊界
     if (targetX < 0 || targetY < 0 || targetX >= this.maze.width || targetY >= this.maze.height) {
-      return; // 邊界牆壁不可鑽
+      return;
     }
     
-    // 檢查是否有牆可鑽
     if (currCell.walls[wallIdx]) {
-      // 破壞這面牆與相鄰格子的牆
       currCell.walls[wallIdx] = false;
       const targetCell = this.maze.getCell(targetX, targetY);
       if (targetCell) {
         targetCell.walls[oppWallIdx] = false;
       }
       this.drillCount--;
-      
-      // 播放輕微震動回饋
       this._playBumpAnimation();
+    }
+  }
+
+  /**
+   * 攻擊面前的蛇（不消耗鑽牆次數）
+   */
+  _useAttack() {
+    let targetX = this.x;
+    let targetY = this.y;
+    if (this.facing === 0) targetY -= 1;
+    if (this.facing === 1) targetX += 1;
+    if (this.facing === 2) targetY += 1;
+    if (this.facing === 3) targetX -= 1;
+    
+    // 透過 game 的 enemyManager 檢查蛇
+    if (this.enemyManager) {
+      const hit = this.enemyManager.attackAt(targetX, targetY);
+      if (hit) {
+        this._playBumpAnimation();
+      }
     }
   }
 

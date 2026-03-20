@@ -1,7 +1,7 @@
 /**
  * items.js
  * 道具與場景物件系統
- * 負責生成地圖道具、傳送陣、玩家的麵包屑記號
+ * 負責生成地圖道具、傳送陣、玩家的燈塔記號
  */
 
 class ItemManager {
@@ -9,46 +9,76 @@ class ItemManager {
     this.maze = maze;
     this.player = player;
     
-    this.items = [];       // 地圖上的道具 (香菇、礦石)
-    this.breadcrumbs = []; // 玩家留下的起司記號
+    this.items = [];       // 地圖上的道具 (香菇、礦石、能量起司)
+    this.breadcrumbs = []; // 玩家留下的燈塔記號
     this.teleporters = []; // 傳送地磚 (成對)
     
     // 定義道具種類
     this.TYPES = {
       MUSHROOM: 'mushroom', // 短暫透視
       ORE: 'ore',           // 永久視野
-      DRILL_UP: 'drill_up'  // 增加鑽洞次數
+      DRILL_UP: 'drill_up'  // 增加鑽洞次數 (能量起司)
     };
   }
 
   /**
    * 根據關卡難度生成隨機道具與傳送陣
-   * @param {number} level 當前關卡
+   * @param {number} level 當前關卡（已含教學關偏移）
    */
   generateItems(level) {
     const multiplier = gameSettings.getDifficultyMultiplier();
-    const numMushrooms = Math.floor((Math.floor(Math.random() * 3) + 1) * multiplier); // 原 1~3顆
-    const numOres = Math.floor((Math.floor(Math.random() * 2) + 1) * multiplier);      // 原 1~2顆
-    const numDrills = Math.floor((Math.floor(Math.random() * 2) + 1) * multiplier);    // 1~2顆 黃色三角形
+    const numMushrooms = Math.floor((Math.floor(Math.random() * 3) + 1) * multiplier);
+    const numOres = Math.floor((Math.floor(Math.random() * 2) + 1) * multiplier);
+    const numDrills = Math.floor((Math.floor(Math.random() * 2) + 1) * multiplier);
 
-    // 生成香菇
     for (let i = 0; i < numMushrooms; i++) {
       this._spawnRandomItem(this.TYPES.MUSHROOM);
     }
-    
-    // 生成礦石
     for (let i = 0; i < numOres; i++) {
       this._spawnRandomItem(this.TYPES.ORE);
     }
-
-    // 生成增加鑽牆次數道具
     for (let i = 0; i < numDrills; i++) {
       this._spawnRandomItem(this.TYPES.DRILL_UP);
     }
 
-    // 第6關開始生成傳送地磚 (1對)
-    if (level >= 6) {
+    // 第 12 關起（原第 6 關 +6 教學偏移）生成傳送地磚
+    if (level >= 12) {
       this._generateTeleporters();
+    }
+  }
+
+  /**
+   * 教學關卡專用道具生成
+   * @param {number} tutorialLevel 教學關編號 (1-6)
+   */
+  generateTutorialItems(tutorialLevel) {
+    switch (tutorialLevel) {
+      case 1:
+        // 純移動教學，無道具
+        break;
+      case 2:
+        // 鑽牆教學：放幾個能量起司讓玩家練習拾取
+        for (let i = 0; i < 2; i++) this._spawnRandomItem(this.TYPES.DRILL_UP);
+        break;
+      case 3:
+        // 記號/燈塔教學：無道具，引導玩家放燈塔
+        break;
+      case 4:
+        // 道具拾取教學：各種道具都放
+        for (let i = 0; i < 2; i++) this._spawnRandomItem(this.TYPES.MUSHROOM);
+        for (let i = 0; i < 2; i++) this._spawnRandomItem(this.TYPES.ORE);
+        for (let i = 0; i < 2; i++) this._spawnRandomItem(this.TYPES.DRILL_UP);
+        break;
+      case 5:
+        // 傳送陣 + 提示教學
+        this._generateTeleporters();
+        this._spawnRandomItem(this.TYPES.MUSHROOM);
+        break;
+      case 6:
+        // 敵人教學：放幾個道具搭配蛇
+        this._spawnRandomItem(this.TYPES.DRILL_UP);
+        this._spawnRandomItem(this.TYPES.MUSHROOM);
+        break;
     }
   }
 
@@ -63,13 +93,11 @@ class ItemManager {
       x = Math.floor(Math.random() * this.maze.width);
       y = Math.floor(Math.random() * this.maze.height);
       
-      // 確保不是起點或終點
       if ((x !== this.maze.start.x || y !== this.maze.start.y) &&
           (x !== this.maze.end.x || y !== this.maze.end.y)) {
-        
-        // 確保這個位子還沒有被放過道具
         const hasItem = this.items.some(item => item.x === x && item.y === y);
-        if (!hasItem) valid = true;
+        const hasBreadcrumb = this.breadcrumbs.some(b => b.x === x && b.y === y);
+        if (!hasItem && !hasBreadcrumb) valid = true;
       }
       attempts++;
     }
@@ -97,7 +125,6 @@ class ItemManager {
         y: Math.floor(Math.random() * this.maze.height)
       };
       
-      // 確保不是起點終點，且兩者距離至少 15 格以上
       const dist = Math.abs(t1.x - t2.x) + Math.abs(t1.y - t2.y);
       if (dist > 15 && 
           (t1.x !== this.maze.start.x || t1.y !== this.maze.start.y) &&
@@ -113,16 +140,56 @@ class ItemManager {
   }
 
   /**
-   * 玩家留下麵包屑記號
-   * @param {number} x
-   * @param {number} y
+   * 玩家放置燈塔記號（牆體化：封閉該格四面牆壁）
+   * @param {number} x 目標格 X
+   * @param {number} y 目標格 Y
+   * @param {Maze} maze 迷宮實體
+   * @returns {boolean} 是否成功放置
    */
-  addBreadcrumb(x, y) {
-    // 檢查這個格子是否已經有記號，避免重複放置
-    const exists = this.breadcrumbs.some(b => b.x === x && b.y === y);
-    if (!exists) {
-      this.breadcrumbs.push({ x, y });
+  addBreadcrumb(x, y, maze) {
+    // 不可放在起點、終點
+    if ((x === maze.start.x && y === maze.start.y) ||
+        (x === maze.end.x && y === maze.end.y)) {
+      return false;
     }
+    // 檢查這個格子是否已經有記號
+    const exists = this.breadcrumbs.some(b => b.x === x && b.y === y);
+    if (exists) return false;
+
+    // 放置燈塔
+    this.breadcrumbs.push({ x, y });
+
+    // 牆體化：封閉該格四面牆壁
+    const cell = maze.getCell(x, y);
+    if (cell) {
+      for (let i = 0; i < 4; i++) {
+        if (!cell.walls[i]) {
+          cell.walls[i] = true;
+          // 同步封閉鄰居的對面牆
+          const dir = maze.DIRECTIONS[i];
+          const nx = x + dir[0];
+          const ny = y + dir[1];
+          const neighbor = maze.getCell(nx, ny);
+          if (neighbor) {
+            const oppIdx = (i + 2) % 4;
+            neighbor.walls[oppIdx] = true;
+          }
+        }
+      }
+    }
+
+    return true;
+  }
+
+  /**
+   * 檢查玩家是否被困住（BFS 確認可否從玩家位置到達終點）
+   * @param {number} px 玩家 X
+   * @param {number} py 玩家 Y
+   * @returns {boolean} true = 被困住
+   */
+  isPlayerTrapped(px, py) {
+    const path = this.maze.findPath(px, py, this.maze.end.x, this.maze.end.y);
+    return path.length === 0 && !(px === this.maze.end.x && py === this.maze.end.y);
   }
 
   /**
@@ -136,7 +203,6 @@ class ItemManager {
     for (let i = this.items.length - 1; i >= 0; i--) {
       const item = this.items[i];
       if (item.x === px && item.y === py) {
-        // 觸發效果
         if (item.type === this.TYPES.MUSHROOM) {
           this.player.triggerMushroomEffect();
         } else if (item.type === this.TYPES.ORE) {
@@ -144,13 +210,11 @@ class ItemManager {
         } else if (item.type === this.TYPES.DRILL_UP) {
           this.player.drillCount += 1;
         }
-        
-        // 移除道具
         this.items.splice(i, 1);
       }
     }
 
-    // 2. 檢查傳送陣 (如果在移動中不觸發，避免剛傳送完又傳回去)
+    // 2. 檢查傳送陣
     if (!this.player.isMoving && !this.player.isTeleporting) {
       if (this.teleporters.length === 2) {
         const [t1, t2] = this.teleporters;
