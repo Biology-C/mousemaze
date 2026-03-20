@@ -170,6 +170,11 @@ class Game {
     if (n < 1) n = 1;
     if (n > 18) n = 18;
     this.currentLevel = n;
+    
+    // 如果目前不在遊戲中，需要啟動循環
+    if (this._animationFrameId) cancelAnimationFrame(this._animationFrameId);
+    this._animationFrameId = requestAnimationFrame(this.gameLoop);
+    
     this.timer.resetLevelTime();
     this.startLevel();
     this.ui.showCheatMessage(gameSettings.language === 'en' ? `Jump to Level ${n}` : `跳轉至第 ${n} 關`);

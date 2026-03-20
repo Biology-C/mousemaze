@@ -59,10 +59,10 @@ class UIManager {
       // 設定相關
       btnSettings: document.getElementById('btn-settings'),
       btnSaveSettings: document.getElementById('btn-save-settings'),
-      selectSpeed: document.getElementById('setting-speed'),
-      selectTheme: document.getElementById('setting-theme'),
-      selectDifficulty: document.getElementById('setting-difficulty'),
-      selectLanguage: document.getElementById('setting-lang'),
+      selectSpeed: document.getElementById('select-speed'),
+      selectTheme: document.getElementById('select-theme'),
+      selectDifficulty: document.getElementById('select-difficulty'),
+      selectLanguage: document.getElementById('select-lang'),
 
       // 說明相關
       btnHelp: document.getElementById('btn-help'),
