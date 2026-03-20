@@ -143,40 +143,41 @@
 
     <!-- 設定視窗 -->
     <div id="menu-settings" class="overlay hidden">
-      <div class="panel">
-        <h2 class="subtitle">遊戲設定</h2>
+      <div class="panel settings-panel">
+        <h2 class="subtitle" data-i18n="settings_title">遊戲設定</h2>
         
-        <div class="setting-group">
-          <label>語言 / Language：</label>
-          <select id="setting-lang" class="input-select">
+        <div class="setting-item">
+          <label data-i18n="label_lang">語言 / Language :</label>
+          <select id="select-lang" class="input-select">
             <option value="zh">繁體中文</option>
             <option value="en">English</option>
           </select>
         </div>
 
-        <div class="setting-group">
-          <label>移動速度：</label>
-          <select id="setting-speed" class="input-select">
-            <option value="0.25">快 (0.25)</option>
-            <option value="0.2">中 (0.2)</option>
-            <option value="0.16">慢 (0.16)</option>
+        <div class="setting-item">
+          <label data-i18n="label_speed">移動速度 :</label>
+          <select id="select-speed" class="input-select">
+            <option value="low" data-i18n="speed_low">慢 (0.15)</option>
+            <option value="mid" data-i18n="speed_mid">中 (0.2)</option>
+            <option value="high" data-i18n="speed_high">快 (0.25)</option>
           </select>
         </div>
 
-        <div class="setting-group">
-          <label>主題色系：</label>
-          <select id="setting-theme" class="input-select">
-            <option value="dark">暗色 (高對比)</option>
-            <option value="light">亮色 (高對比)</option>
+        <div class="setting-item">
+          <label data-i18n="label_theme">主題色系 :</label>
+          <select id="select-theme" class="input-select">
+            <option value="dark" data-i18n="theme_dark">暗色 (高對比)</option>
+            <option value="classic" data-i18n="theme_classic">經典 (綠/黑)</option>
+            <option value="retro" data-i18n="theme_retro">復古 (灰/白)</option>
           </select>
         </div>
 
-        <div class="setting-group">
-          <label>難易度：</label>
-          <select id="setting-difficulty" class="input-select">
-            <option value="heaven">天堂 (道具x2, 打洞21次)</option>
-            <option value="normal">一般 (打洞15次)</option>
-            <option value="famine">飢荒 (道具x0.5, 打洞9次)</option>
+        <div class="setting-item">
+          <label data-i18n="label_difficulty">難易度 :</label>
+          <select id="select-difficulty" class="input-select">
+            <option value="heaven" data-i18n="diff_heaven">天堂 (打洞21次)</option>
+            <option value="normal" data-i18n="diff_normal">一般 (打洞15次)</option>
+            <option value="famine" data-i18n="diff_famine">飢荒 (打洞9次)</option>
           </select>
         </div>
 

@@ -117,7 +117,12 @@ class UIManager {
         pause_title: "遊戲暫停", resume: "繼續遊戲", restart: "重新開始本關", quit: "回主選單",
         complete: "關卡完成！", level_time: "本關用時", total_time: "總計用時",
         next_level: "進入下一關", rest: "休息結算 (存檔)", close: "關閉", help_close: "我知道了",
-        save_close: "儲存並關閉"
+        save_close: "儲存並關閉",
+        settings_title: "遊戲設定", label_lang: "語言 / Language :", label_speed: "移動速度 :", 
+        label_theme: "主題色系 :", label_difficulty: "難易度 :",
+        speed_low: "慢 (0.15)", speed_mid: "中 (0.2)", speed_high: "快 (0.25)",
+        theme_dark: "暗色 (高對比)", theme_classic: "經典 (綠/黑)", theme_retro: "復古 (灰/白)",
+        diff_heaven: "天堂 (打洞21次)", diff_normal: "一般 (打洞15次)", diff_famine: "飢荒 (打洞9次)"
       },
       en: {
         level: "Level", time: "Time", dig: "Dig", hint: "Hint",
@@ -126,7 +131,12 @@ class UIManager {
         pause_title: "Game Paused", resume: "Resume", restart: "Restart Level", quit: "Main Menu",
         complete: "Level Complete!", level_time: "Level Time", total_time: "Total Time",
         next_level: "Next Level", rest: "Rest & Save", close: "Close", help_close: "Got it",
-        save_close: "Save & Close"
+        save_close: "Save & Close",
+        settings_title: "Settings", label_lang: "Language :", label_speed: "Speed :",
+        label_theme: "Theme :", label_difficulty: "Difficulty :",
+        speed_low: "Slow (0.15)", speed_mid: "Mid (0.2)", speed_high: "Fast (0.25)",
+        theme_dark: "Dark (High Contrast)", theme_classic: "Classic (Green/Black)", theme_retro: "Retro (Gray/White)",
+        diff_heaven: "Heaven (Dig x21)", diff_normal: "Normal (Dig x15)", diff_famine: "Famine (Dig x9)"
       }
     };
 
@@ -224,18 +234,29 @@ class UIManager {
       this.elements.btnSkillSettings.addEventListener('mousedown', () => this.showSettings());
     }
 
-    // GM 跳關 Enter
+    // 監聽 GM 跳關輸入
     if (this.elements.gmJumpLevel) {
       this.elements.gmJumpLevel.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
-          const lv = parseInt(this.elements.gmJumpLevel.value);
-          if (!isNaN(lv)) {
+          const lv = parseInt(e.target.value);
+          if (lv >= 1 && lv <= this.game.maxLevel) {
             this.game.skipToLevel(lv);
-            this.elements.gmJumpLevel.blur();
+            e.target.value = '';
+            e.target.blur();
           }
         }
       });
     }
+
+    // 全域 Enter 監聽 (用於 GM 快速聚焦)
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && this.game.isGM) {
+        // 如果目前沒聚焦在輸入框且目前在遊戲中或暫停中，則聚焦跳關輸入框
+        if (document.activeElement.tagName !== 'INPUT' && this.elements.gmJumpLevel) {
+          this.elements.gmJumpLevel.focus();
+        }
+      }
+    });
   }
 
   initJoystick() {
@@ -513,16 +534,20 @@ class UIManager {
 
   // 更新所有帶有 data-i18n 屬性的元素文字
   updateUILanguage() {
-    const lang = gameSettings.language || 'zh';
-    const dict = this.I18N[lang] || this.I18N.zh;
-    
+    const lang = gameSettings.language;
+    const dict = this.I18N[lang];
+    if (!dict) return;
+
     document.querySelectorAll('[data-i18n]').forEach(el => {
       const key = el.getAttribute('data-i18n');
       if (dict[key]) {
-        el.textContent = dict[key];
+        if (el.tagName === 'INPUT' && el.type === 'text') {
+          el.placeholder = dict[key];
+        } else {
+          el.textContent = dict[key];
+        }
       }
     });
-
     // 特殊處理：如果有外部按鈕標籤
     if (this.elements.btnPause) {
       const pauseText = lang === 'en' ? 'Pause' : '暫停';
