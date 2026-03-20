@@ -171,16 +171,13 @@ class Game {
     if (n > 18) n = 18;
     this.currentLevel = n;
     
-    // 強制隱藏所有選單並進入遊戲狀態
-    this.ui.hideAllMenus();
+    // 強制進入遊戲狀態
     this.state = Game.STATE_PLAYING;
+    this.ui.hideAllMenus();
     
-    // 如果目前不在遊戲中，需要啟動循環
-    if (this._animationFrameId) cancelAnimationFrame(this._animationFrameId);
-    this._animationFrameId = requestAnimationFrame(this.gameLoop);
-    
-    this.timer.resetLevelTime();
+    // 通過 startLevel 重新生成地圖、物體、重設計時器
     this.startLevel();
+
     this.ui.showCheatMessage(gameSettings.language === 'en' ? `Jump to Level ${n}` : `跳轉至第 ${n} 關`);
   }
 
