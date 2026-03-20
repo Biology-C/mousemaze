@@ -13,7 +13,7 @@ class Player {
    * @param {number} cellSize 網格像素大小
    * @param {Maze} maze 迷宮實體 (用於碰撞檢測)
    */
-  constructor(startX, startY, cellSize, maze) {
+  constructor(startX, startY, cellSize, maze, persistentStats = null) {
     this.x = startX;
     this.y = startY;
     
@@ -45,9 +45,10 @@ class Player {
     // 傳送動畫狀態
     this.isTeleporting = false;
     
-    // 技能與道具狀態
+    // 技能與道具狀態 (持久化)
     this.drillCount = this._initializeDrillCount(); // 每關鑽洞次數（依難度）
-    this.permanentSightRadius = 6.5; // 基礎視野
+    this.permanentSightRadius = persistentStats ? persistentStats.sightRadius : 6.5; // 基礎視野
+    this.hintRange = persistentStats ? persistentStats.hintRange : 30; // 提示格數
     this.hasMagicVision = false; // 是否獲得全圖透視
     this.visionTimer = 0;
     
@@ -55,6 +56,8 @@ class Player {
     this.hintCount = this._initializeHintCount();
     this.hintPath = [];
     this.hintTimer = 0;
+    this.hintStartX = -1; // 發動提示時的位置（固定起點）
+    this.hintStartY = -1;
     
     // 按鍵狀態紀錄
     this.keys = {
@@ -65,6 +68,8 @@ class Player {
       w: false, a: false, s: false, d: false
     };
     
+    this.onStatsChanged = null;
+
     this._handleKeyDown = this._onKeyDown.bind(this);
     this._handleKeyUp = this._onKeyUp.bind(this);
     this.enableControl();
@@ -150,13 +155,13 @@ class Player {
       const fullPath = this.maze.findPath(this.x, this.y, this.maze.end.x, this.maze.end.y);
       if (fullPath.length > 0) {
         this.hintCount--;
-        // 截取前 30 格
-        this.hintPath = fullPath.slice(0, 30);
+        // 紀錄發動時點 (使 renderer.js 能從該點畫起)
+        this.hintStartX = this.x;
+        this.hintStartY = this.y;
+        // 截取前 hintRange 格
+        this.hintPath = fullPath.slice(0, this.hintRange);
         // 持續 30 秒
         this.hintTimer = 30000;
-        
-        // 發送通知給 UI 更新顯示
-        // UI 自行由 UpdateHUD 去讀取，或者等待計時器迴圈。這裡依賴 Game.timer 的 updateHUD 機制
       }
     }
   }
@@ -231,10 +236,30 @@ class Player {
       let nextX = this.x;
       let nextY = this.y;
       
-      if (this.keys.ArrowUp || this.keys.w) { nextY -= 1; this.facing = 0; }
-      else if (this.keys.ArrowRight || this.keys.d) { nextX += 1; this.facing = 1; }
-      else if (this.keys.ArrowDown || this.keys.s) { nextY += 1; this.facing = 2; }
-      else if (this.keys.ArrowLeft || this.keys.a) { nextX -= 1; this.facing = 3; }
+      const currCell = this.maze.getCell(this.x, this.y);
+      const isInverse = currCell && currCell.type === 'inverse';
+
+      // 輸入映射
+      let inputUp = this.keys.ArrowUp || this.keys.w;
+      let inputRight = this.keys.ArrowRight || this.keys.d;
+      let inputDown = this.keys.ArrowDown || this.keys.s;
+      let inputLeft = this.keys.ArrowLeft || this.keys.a;
+
+      if (isInverse) {
+        // 反轉方向
+        let tmpUp = inputUp;
+        inputUp = inputDown;
+        inputDown = tmpUp;
+
+        let tmpRight = inputRight;
+        inputRight = inputLeft;
+        inputLeft = tmpRight;
+      }
+      
+      if (inputUp) { nextY -= 1; this.facing = 0; }
+      else if (inputRight) { nextX += 1; this.facing = 1; }
+      else if (inputDown) { nextY += 1; this.facing = 2; }
+      else if (inputLeft) { nextX -= 1; this.facing = 3; }
       
       // 如果試圖移動
       if (nextX !== this.x || nextY !== this.y) {
@@ -291,8 +316,15 @@ class Player {
     if (tx < 0 || ty < 0 || tx >= this.maze.width || ty >= this.maze.height) return false;
     
     const currCell = this.maze.getCell(this.x, this.y);
+    const targetCell = this.maze.getCell(tx, ty);
+
+    // 檢查目標格是否為單行道且與移動方向衝突
+    if (targetCell && targetCell.type === 'oneway') {
+      // 若目標是單行道，角色必須面對單行道的允許方向才能進入
+      if (this.facing !== targetCell.onewayDir) return false;
+    }
+
     // [N, E, S, W] = [0, 1, 2, 3] 牆壁存在與否
-    
     if (ty < this.y) return !currCell.walls[0]; // 想往上，如果上方沒牆就能走
     if (tx > this.x) return !currCell.walls[1]; // 想往右，如果右方沒牆就能走
     if (ty > this.y) return !currCell.walls[2]; // 想往下，如果下方沒牆就能走
@@ -339,8 +371,16 @@ class Player {
     }
     
     if (currCell.walls[wallIdx]) {
-      currCell.walls[wallIdx] = false;
       const targetCell = this.maze.getCell(targetX, targetY);
+      
+      // 檢查是否為鐵牆（若當前格或目標格是鐵牆，則不可鑽）
+      if ((currCell && currCell.type === 'iron') || (targetCell && targetCell.type === 'iron')) {
+        this._playBumpAnimation();
+        // UI 顯示無法鑽牆提示（可由 ui.js 或 game.js 處理，這裡單純防止鑽過）
+        return;
+      }
+
+      currCell.walls[wallIdx] = false;
       if (targetCell) {
         targetCell.walls[oppWallIdx] = false;
       }

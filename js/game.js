@@ -31,6 +31,9 @@ class Game {
       firstSnakeAttackReady: false
     };
 
+    // 跨關卡持久化屬性 (視野半徑、提示格數)
+    this.persistentStats = { sightRadius: 6.5, hintRange: 30 };
+
     // 紀錄上一次輸入的姓名
     this.lastPlayerName = Storage.loadPlayerName() || '';
 
@@ -152,6 +155,7 @@ class Game {
       firstSnakeSeen: false,
       firstSnakeAttackReady: false
     };
+    this.persistentStats = { sightRadius: 6.5, hintRange: 30 }; // 重置持久化屬性
     Storage.clearSave();
     this.startLevel();
   }
@@ -166,6 +170,9 @@ class Game {
       this.timer.setTotalTime(save.totalTimeMs);
       if (save.tutorialHints) {
         this.tutorialHints = { ...this.tutorialHints, ...save.tutorialHints };
+      }
+      if (save.persistentStats) {
+        this.persistentStats = { ...this.persistentStats, ...save.persistentStats };
       }
       this.startLevel();
     }
@@ -201,14 +208,20 @@ class Game {
     this.renderer.resize();
     this.ui.checkMobileControls();
 
-    // 1. 生成迷宮
+    // 1. 生成迷宮 (傳入關卡以觸發特殊地磚)
     const size = this.levelSizes[this.currentLevel];
     this.maze = new Maze(size, size);
-    this.maze.generate();
+    this.maze.generate(this.currentLevel);
 
-    // 2. 初始化角色
+    // 2. 初始化角色 (傳入持久化屬性)
     if (this.player) this.player.destroy();
-    this.player = new Player(this.maze.start.x, this.maze.start.y, this.renderer.cellSize, this.maze);
+    this.player = new Player(
+      this.maze.start.x, this.maze.start.y,
+      this.renderer.cellSize, this.maze,
+      this.persistentStats
+    );
+    // 讓 player 能夠反饋給 game 更新 persistentStats
+    this.player.onStatsChanged = (stats) => { Object.assign(this.persistentStats, stats); };
 
     // 3. 初始化道具管理器
     this.itemManager = new ItemManager(this.maze, this.player, this);
@@ -247,6 +260,11 @@ class Game {
     if (this._cheatActivated) {
       this.player.drillCount = Infinity;
     }
+
+    // 初始化定時合併牆全域狀態
+    this.mergingWallClosed = false;
+    this.mergingWallTimer = 0;
+    this.mergingWallInterval = 3000; // 預設每 3 秒開關一次
 
     // 5. 重置計時器
     this.timer.resetLevel();
@@ -332,6 +350,13 @@ class Game {
       }
     }
 
+    // 處理定時合併牆邏輯 (每 3 秒切換)
+    this.mergingWallTimer += deltaTime;
+    if (this.mergingWallTimer >= this.mergingWallInterval) {
+      this.mergingWallTimer = 0;
+      this._toggleMergingWalls();
+    }
+
     // 困死偵測（放燈塔後）
     if (this.itemManager && !this.player.isMoving) {
       if (this.itemManager.isPlayerTrapped(this.player.x, this.player.y)) {
@@ -380,6 +405,53 @@ class Game {
       this.timer.start();
       this.ui.hideMenu('pause');
       this.ui.checkMobileControls();
+    }
+  }
+
+  /**
+   * 切換定時合併牆狀態
+   */
+  _toggleMergingWalls() {
+    this.mergingWallClosed = !this.mergingWallClosed;
+    
+    // 遍歷整個迷宮的格子
+    for (let x = 0; x < this.maze.width; x++) {
+      for (let y = 0; y < this.maze.height; y++) {
+        const cell = this.maze.getCell(x, y);
+        if (cell && cell.type === 'merging') {
+          // 如果關閉，則將此格四周的牆壁都設為 true (模擬夾死)；打開則恢復
+          // 此處簡單處理：合併牆開啟時格子無牆，關閉時補滿牆
+          if (this.mergingWallClosed) {
+            cell.walls = [true, true, true, true];
+            
+            // 檢查玩家是否在此格內
+            if (Math.round(this.player.x) === x && Math.round(this.player.y) === y) {
+              this.handlePlayerDeath(this.getI18nString('msg_crushed_by_wall') || "被牆壁夾死了！");
+            }
+            // 檢查蛇是否在此格內
+            if (this.enemyManager) {
+              this.enemyManager.snakes.forEach(snake => {
+                if (snake.alive && snake.head.x === x && snake.head.y === y) {
+                  snake.alive = false; // 蛇被夾死
+                }
+              });
+            }
+            // 檢查燈塔是否在此格內
+            if (this.itemManager) {
+              const breadcrumbs = this.itemManager.breadcrumbs;
+              for (let i = breadcrumbs.length - 1; i >= 0; i--) {
+                const b = breadcrumbs[i];
+                if (b.x === x && b.y === y) {
+                  this.itemManager.removeBreadcrumb(i);
+                }
+              }
+            }
+          } else {
+            // 打開時，清除該格原本的牆壁 
+            cell.walls = [false, false, false, false];
+          }
+        }
+      }
     }
   }
 
@@ -476,7 +548,13 @@ class Game {
   startNextLevel() {
     if (this.currentLevel < this.maxLevel) {
       this.currentLevel++;
-      Storage.saveGame(this.currentLevel, this.timer.getTotalTime());
+      // 如果 player 屬性傳回了變更，先同步一次
+      if (this.player) {
+        this.persistentStats.sightRadius = this.player.permanentSightRadius;
+        this.persistentStats.hintRange = this.player.hintRange;
+      }
+      Storage.saveGame(this.currentLevel, this.timer.getTotalTime(),
+        this.tutorialHints, this.persistentStats);
       this.startLevel();
     } else {
       this.quitToMenu();
@@ -487,8 +565,13 @@ class Game {
    * 休息結算
    */
   restAndSave() {
+    if (this.player) {
+      this.persistentStats.sightRadius = this.player.permanentSightRadius;
+      this.persistentStats.hintRange = this.player.hintRange;
+    }
     if (this.currentLevel < this.maxLevel) {
-      Storage.saveGame(this.currentLevel + 1, this.timer.getTotalTime());
+      Storage.saveGame(this.currentLevel + 1, this.timer.getTotalTime(),
+        this.tutorialHints, this.persistentStats);
     } else {
       Storage.clearSave();
     }

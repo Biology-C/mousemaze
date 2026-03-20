@@ -16,7 +16,7 @@ class ItemManager {
     
     // 定義道具種類
     this.TYPES = {
-      MUSHROOM: 'mushroom', // 短暫透視
+      MUSHROOM: 'mushroom', // 短暫透視 + 永久提示加長
       ORE: 'ore',           // 永久視野
       DRILL_UP: 'drill_up'  // 增加鑽洞次數 (能量起司)
     };
@@ -157,8 +157,8 @@ class ItemManager {
     const exists = this.breadcrumbs.some(b => b.x === x && b.y === y);
     if (exists) return false;
 
-    // 放置燈塔
-    this.breadcrumbs.push({ x, y });
+    // 放置燈塔：加入血量與受影響的牆面紀錄
+    const breadcrumb = { x, y, hp: 3, changedWalls: [] };
 
     // 牆體化：封閉該格四面牆壁
     const cell = maze.getCell(x, y);
@@ -166,6 +166,8 @@ class ItemManager {
       for (let i = 0; i < 4; i++) {
         if (!cell.walls[i]) {
           cell.walls[i] = true;
+          breadcrumb.changedWalls.push({ cx: x, cy: y, wallIdx: i });
+          
           // 同步封閉鄰居的對面牆
           const dir = maze.DIRECTIONS[i];
           const nx = x + dir[0];
@@ -174,10 +176,12 @@ class ItemManager {
           if (neighbor) {
             const oppIdx = (i + 2) % 4;
             neighbor.walls[oppIdx] = true;
+            breadcrumb.changedWalls.push({ cx: nx, cy: ny, wallIdx: oppIdx });
           }
         }
       }
     }
+    this.breadcrumbs.push(breadcrumb);
 
     // 觸發首輪引導提示
     if (this.game && this.game.tutorialHints && !this.game.tutorialHints.firstBeaconPlaced) {
@@ -190,12 +194,35 @@ class ItemManager {
   }
 
   /**
+   * 移除燈塔記號，並恢復原本的路徑
+   * @param {number} index 燈塔在陣營中的索引
+   */
+  removeBreadcrumb(index) {
+    if (index < 0 || index >= this.breadcrumbs.length) return;
+    const b = this.breadcrumbs[index];
+    
+    // 恢復受影響的牆壁為不封閉 (false)
+    if (b.changedWalls) {
+      b.changedWalls.forEach(cw => {
+        const cell = this.maze.getCell(cw.cx, cw.cy);
+        if (cell) cell.walls[cw.wallIdx] = false;
+      });
+    }
+    
+    // 從陣列移除
+    this.breadcrumbs.splice(index, 1);
+  }
+
+  /**
    * 檢查玩家是否被困住（BFS 確認可否從玩家位置到達終點）
    * @param {number} px 玩家 X
    * @param {number} py 玩家 Y
    * @returns {boolean} true = 被困住
    */
   isPlayerTrapped(px, py) {
+    if (this.player && this.player.drillCount > 0) {
+      return false; // 持有鑽頭不算困死
+    }
     const path = this.maze.findPath(px, py, this.maze.end.x, this.maze.end.y);
     return path.length === 0 && !(px === this.maze.end.x && py === this.maze.end.y);
   }
@@ -213,8 +240,15 @@ class ItemManager {
       if (item.x === px && item.y === py) {
         if (item.type === this.TYPES.MUSHROOM) {
           this.player.triggerMushroomEffect();
+          this.player.hintRange += 10; // 吃到蘑菇提示 +10 格
+          if (this.player.onStatsChanged) {
+            this.player.onStatsChanged({ hintRange: this.player.hintRange });
+          }
         } else if (item.type === this.TYPES.ORE) {
           this.player.permanentSightRadius += 2;
+          if (this.player.onStatsChanged) {
+            this.player.onStatsChanged({ sightRadius: this.player.permanentSightRadius });
+          }
         } else if (item.type === this.TYPES.DRILL_UP) {
           this.player.drillCount += 1;
         }
@@ -233,5 +267,38 @@ class ItemManager {
         }
       }
     }
+
+    // 3. 檢查特殊地磚：機會寶箱與出口轉換 (僅在抵達新格子時檢查)
+    if (!this.player.isMoving && !this.player.isTeleporting) {
+      const cell = this.maze.getCell(px, py);
+      if (cell) {
+        if (cell.type === 'chance') {
+          cell.type = 'normal'; // 踩過就變回普通地磚
+          this._triggerChanceBox();
+        } else if (cell.type === 'exit_shift') {
+          cell.type = 'normal';
+          this.maze.relocateExit();
+        }
+      }
+    }
+  }
+
+  /**
+   * 觸發機會寶箱隨機事件
+   */
+  _triggerChanceBox() {
+    const events = [
+      () => this._spawnRandomItem(this.TYPES.MUSHROOM),
+      () => this._spawnRandomItem(this.TYPES.ORE),
+      () => this._spawnRandomItem(this.TYPES.DRILL_UP),
+      () => {
+        if (this.game && this.game.enemyManager) {
+          this.game.enemyManager.spawnSnake();
+        }
+      },
+      () => { this.maze.relocateExit(); }
+    ];
+    const randIdx = Math.floor(Math.random() * events.length);
+    events[randIdx]();
   }
 }

@@ -3,7 +3,7 @@ const STORAGE_KEY_LEADERBOARD = 'maze_leaderboard';
 const STORAGE_KEY_PLAYTIME = 'maze_playtime';
 
 const Storage = {
-  saveGame(level, totalTimeMs, tutorialHints = {}) {
+  saveGame(level, totalTimeMs, tutorialHints = {}, persistentStats = null) {
     const data = {
       level,
       totalTimeMs,
@@ -12,7 +12,8 @@ const Storage = {
         firstBeaconPlaced: false,
         firstSnakeSeen: false,
         firstSnakeAttackReady: false
-      }
+      },
+      persistentStats: persistentStats || { sightRadius: 6.5, hintRange: 30 }
     };
 
     // 如果傳入了教學提示狀態也一併更新
@@ -22,6 +23,7 @@ const Storage = {
     
     localStorage.setItem(STORAGE_KEY_SAVE, JSON.stringify(data));
   },
+
 
   loadGame() {
     const dataStr = localStorage.getItem(STORAGE_KEY_SAVE);

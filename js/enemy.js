@@ -126,6 +126,11 @@ class Snake {
           best = d;
         }
       });
+      
+      // 檢查 best 方向是否正好是燈塔 (因為尋路目標標記了燈塔位置，且燈塔會把四周牆壁封住，
+      // 但蛇在 best 之前必須先判斷面前是否有燈塔阻擋) 
+      // 實際上燈塔會修改 maze.walls，所以如果燈塔把牆封死，蛇 dirs.length 就可能過不去。
+      // 但我們定義蛇「攻擊」燈塔：如果 best 或某個相鄰格是燈塔，則對其傷害。
     } else {
       // 隨機選
       best = dirs[Math.floor(Math.random() * dirs.length)];
@@ -244,8 +249,40 @@ class EnemyManager {
 
     // 更新所有蛇
     const breadcrumbs = this.itemManager ? this.itemManager.breadcrumbs : [];
-    this.snakes.forEach(snake => {
-      snake.update(this.player, breadcrumbs);
+    this.snakes.forEach((snake, snakeIdx) => {
+      // 處理蛇與相鄰燈塔的攻擊互動
+      let attackedBeacon = false;
+      if (breadcrumbs.length > 0) {
+        const hx = snake.head.x;
+        const hy = snake.head.y;
+        
+        for (let bIdx = 0; bIdx < breadcrumbs.length; bIdx++) {
+          const b = breadcrumbs[bIdx];
+          const dist = Math.abs(b.x - hx) + Math.abs(b.y - hy);
+          if (dist === 1) { // 燈塔在相鄰格子
+            // 由於 update 約每 16ms 呼叫一次，這裡假設 snake.attackCooldown 控制 1 秒攻速
+            if (!snake.attackCooldown || snake.attackCooldown <= 0) {
+              b.hp -= 1;
+              snake.attackCooldown = 60; // 60 幀約 1 秒
+              attackedBeacon = true;
+              
+              if (b.hp <= 0) {
+                this.itemManager.removeBreadcrumb(bIdx);
+              }
+              break; // 每次只攻擊一座燈塔
+            }
+          }
+        }
+      }
+
+      if (snake.attackCooldown > 0) {
+        snake.attackCooldown--;
+      }
+
+      // 若本回合已發動攻擊，則這幀不再尋路/移動
+      if (!attackedBeacon) {
+        snake.update(this.player, breadcrumbs);
+      }
 
       // 檢查蛇頭碰玩家
       if (snake.isCollidingWithPlayer(this.player.x, this.player.y)) {

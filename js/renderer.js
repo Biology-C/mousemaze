@@ -83,11 +83,40 @@ class Renderer {
     const startObjRow = Math.max(0, Math.floor(this.camera.y / this.cellSize) - 1);
     const endObjRow = Math.min(maze.height, Math.ceil((this.camera.y + this.camera.height) / this.cellSize) + 1);
 
-    // 繪製地板
+    // 繪製地板與特殊地磚
     for (let x = startObjCol; x < endObjCol; x++) {
       for (let y = startObjRow; y < endObjRow; y++) {
-        this.ctx.fillStyle = (x % 2 === y % 2) ? this.colors.floor : this.colors.floorPattern;
+        const cell = maze.getCell(x, y);
+        if (!cell) continue;
+
+        let floorColor = (x % 2 === y % 2) ? this.colors.floor : this.colors.floorPattern;
+        
+        // 特殊地磚背景色
+        if (cell.type === 'inverse') {
+          floorColor = '#bdc3c7'; // 灰白色反向地磚
+        } else if (cell.type === 'oneway') {
+          floorColor = '#aed6f1'; // 淺藍色單行道
+        } else if (cell.type === 'chance') {
+          floorColor = '#fcf3cf'; // 淺黃寶箱底
+        } else if (cell.type === 'exit_shift') {
+          floorColor = '#e8daef'; // 淺紫出口轉換底
+        }
+
+        this.ctx.fillStyle = floorColor;
         this.ctx.fillRect(x * this.cellSize, y * this.cellSize, this.cellSize, this.cellSize);
+
+        // 繪製特殊地磚上的圖樣
+        const cx = x * this.cellSize + this.cellSize / 2;
+        const cy = y * this.cellSize + this.cellSize / 2;
+        if (cell.type === 'inverse') {
+          this._drawInverseIcon(cx, cy);
+        } else if (cell.type === 'oneway') {
+          this._drawOnewayArrow(cx, cy, cell.onewayDir);
+        } else if (cell.type === 'chance') {
+          this._drawChanceChest(cx, cy);
+        } else if (cell.type === 'exit_shift') {
+          this._drawExitShiftIcon(cx, cy);
+        }
       }
     }
 
@@ -102,7 +131,13 @@ class Renderer {
         if (!cell) continue;
         const px = x * this.cellSize;
         const py = y * this.cellSize;
-        this.ctx.fillStyle = this.colors.wall;
+        
+        let wallColor = this.colors.wall;
+        if (cell.type === 'iron') wallColor = '#7f8c8d'; // 鐵灰色
+        else if (cell.type === 'merging') wallColor = '#c0392b'; // 紅色合併牆
+
+        this.ctx.fillStyle = wallColor;
+
         if (cell.walls[0]) this.ctx.fillRect(px, py, this.cellSize, this.wallThickness);
         if (cell.walls[1]) this.ctx.fillRect(px + this.cellSize - this.wallThickness, py, this.wallThickness, this.cellSize);
         if (cell.walls[2]) this.ctx.fillRect(px, py + this.cellSize - this.wallThickness, this.cellSize, this.wallThickness);
@@ -264,8 +299,9 @@ class Renderer {
     this.ctx.save();
     this.ctx.beginPath();
 
-    const startX = player.x * this.cellSize + this.cellSize / 2;
-    const startY = player.y * this.cellSize + this.cellSize / 2;
+    // 改為從提示發動時的座標開始畫（固定不隨玩家移動）
+    const startX = player.hintStartX * this.cellSize + this.cellSize / 2;
+    const startY = player.hintStartY * this.cellSize + this.cellSize / 2;
     this.ctx.moveTo(startX, startY);
 
     player.hintPath.forEach(pt => {
@@ -355,6 +391,96 @@ class Renderer {
     this.ctx.drawImage(tempCanvas, this.camera.x, this.camera.y);
 
     this.ctx.restore();
+  }
+
+  // --- 特殊地磚繪製 ---
+
+  _drawInverseIcon(cx, cy) {
+    const s = this.cellSize * 0.3;
+    this.ctx.save();
+    this.ctx.translate(cx, cy);
+    // 繪製兩個反向的箭頭圓環 (簡單表示兩半圓弧)
+    this.ctx.beginPath();
+    this.ctx.arc(0, 0, s, 0.2, Math.PI - 0.2);
+    this.ctx.strokeStyle = '#7f8c8d';
+    this.ctx.lineWidth = 2;
+    this.ctx.stroke();
+
+    this.ctx.beginPath();
+    this.ctx.arc(0, 0, s, Math.PI + 0.2, Math.PI * 2 - 0.2);
+    this.ctx.stroke();
+    
+    // 箭頭
+    this.ctx.beginPath();
+    this.ctx.moveTo(s, -s * 0.2);
+    this.ctx.lineTo(s * 1.2, 0);
+    this.ctx.lineTo(s * 0.8, 0);
+    this.ctx.fillStyle = '#7f8c8d';
+    this.ctx.fill();
+
+    this.ctx.beginPath();
+    this.ctx.moveTo(-s, s * 0.2);
+    this.ctx.lineTo(-s * 1.2, 0);
+    this.ctx.lineTo(-s * 0.8, 0);
+    this.ctx.fill();
+    
+    this.ctx.restore();
+  }
+
+  _drawOnewayArrow(cx, cy, dirIdx) {
+    const s = this.cellSize * 0.3;
+    this.ctx.save();
+    this.ctx.translate(cx, cy);
+    // n=0, e=1, s=2, w=3
+    this.ctx.rotate(dirIdx * Math.PI / 2);
+
+    this.ctx.beginPath();
+    this.ctx.moveTo(0, -s);
+    this.ctx.lineTo(s, 0);
+    this.ctx.lineTo(s * 0.4, 0);
+    this.ctx.lineTo(s * 0.4, s);
+    this.ctx.lineTo(-s * 0.4, s);
+    this.ctx.lineTo(-s * 0.4, 0);
+    this.ctx.lineTo(-s, 0);
+    this.ctx.closePath();
+
+    this.ctx.fillStyle = 'rgba(52, 152, 219, 0.5)';
+    this.ctx.fill();
+    this.ctx.restore();
+  }
+
+  _drawChanceChest(cx, cy) {
+    const s = this.cellSize * 0.3;
+    this.ctx.fillStyle = '#d35400';
+    this.ctx.fillRect(cx - s, cy - s * 0.6, s * 2, s * 1.2);
+    this.ctx.fillStyle = '#f1c40f'; // 綁帶
+    this.ctx.fillRect(cx - s * 0.2, cy - s * 0.6, s * 0.4, s * 1.2);
+    this.ctx.fillRect(cx - s, cy - s * 0.1, s * 2, s * 0.2);
+    
+    // 問號
+    this.ctx.fillStyle = '#fff';
+    this.ctx.font = `bold ${s * 1.2}px monospace`;
+    this.ctx.textAlign = 'center';
+    this.ctx.textBaseline = 'middle';
+    this.ctx.fillText('?', cx, cy);
+  }
+
+  _drawExitShiftIcon(cx, cy) {
+    const s = this.cellSize * 0.25;
+    this.ctx.beginPath();
+    this.ctx.arc(cx, cy, s, 0, Math.PI * 2);
+    this.ctx.fillStyle = '#9b59b6';
+    this.ctx.fill();
+    // 中心小圖
+    this.ctx.beginPath();
+    this.ctx.moveTo(cx - s * 0.4, cy);
+    this.ctx.lineTo(cx + s * 0.4, cy);
+    this.ctx.moveTo(cx + s * 0.1, cy - s * 0.3);
+    this.ctx.lineTo(cx + s * 0.4, cy);
+    this.ctx.lineTo(cx + s * 0.1, cy + s * 0.3);
+    this.ctx.strokeStyle = '#fff';
+    this.ctx.lineWidth = 1.5;
+    this.ctx.stroke();
   }
 
   destroy() {
