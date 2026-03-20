@@ -11,7 +11,7 @@ A pixel-art maze exploration game built with pure JavaScript and HTML5 Canvas. C
 
 ## 🌟 Game features
 
-*   **18 Progressive Levels**: Includes 6 tutorial stages covering movement, drilling, lighthouses, and enemies.
+*   **18 Progressive Levels**: Includes 6 tutorial stages covering movement, digging, lighthouses, and enemies.
 *   **Tutorial Title System**: Earn unique titles by completing tutorials (e.g., 🐾 Novice → ⚔️ Hero Mouse).
 *   **🐍 Snake Enemy System**:
     *   One snake spawns every 60 seconds—don't let it catch you!
@@ -21,7 +21,7 @@ A pixel-art maze exploration game built with pure JavaScript and HTML5 Canvas. C
 *   **🔦 Lighthouse Beacons**: Place permanent lighthouses to illuminate fog, but they also block paths. Use them strategically to lure snakes!
 *   **⚡ Smart Action Button**: `Space` drills through walls if facing one, or attacks snakes if the path is clear.
 *   **Gadgets**:
-    *   🧀 **Energy Cheese**: Refill drill uses.
+    *   🧀 **Dig Cheese**: Refill drill uses.
     *   🍄 **Magic Mushrooms**: Temporary full-map vision.
     *   💎 **Raw Ore**: Permanently increase sight radius.
     *   🌀 **Teleporters**: Two-way long-distance travel.
@@ -38,7 +38,7 @@ A pixel-art maze exploration game built with pure JavaScript and HTML5 Canvas. C
 | Key | Function |
 |------|------|
 | `↑↓←→` / `WASD` | Move |
-| `Space` | Drill (if wall) / Attack (if clear) |
+| `Space` | Dig (if wall) / Attack (if clear) |
 | `Q` | Place Lighthouse (in front) |
 | `Z` | Path hint |
 | `Esc` | Pause |
@@ -54,7 +54,7 @@ A pixel-art maze exploration game built with pure JavaScript and HTML5 Canvas. C
 
 ### Tutorial Titles
 - Level 1: 🐾 Novice
-- Level 2: ⛏️ Drill Mouse
+- Level 2: ⛏️ Dig Mouse
 - Level 3: 💡 Lighthouse Keeper
 - Level 4: 🎒 Explorer
 - Level 5: 🌀 Time Traveler
