@@ -52,32 +52,32 @@
     <div id="menu-main" class="overlay">
       <div class="panel">
         <h1 class="title">Bio-Logic<br>Mouse Co.</h1>
-        <button id="btn-start" class="btn">開始新遊戲</button>
-        <button id="btn-continue" class="btn hidden">繼續遊戲</button>
-        <button id="btn-leaderboard" class="btn">排行榜</button>
-        <button id="btn-settings" class="btn">設定</button>
-        <button id="btn-help" class="btn">操作說明</button>
+        <button id="btn-start" class="btn" data-i18n="start">開始新遊戲</button>
+        <button id="btn-continue" class="btn hidden" data-i18n="continue">繼續遊戲</button>
+        <button id="btn-leaderboard" class="btn" data-i18n="leaderboard">排行榜</button>
+        <button id="btn-settings" class="btn" data-i18n="settings">設定</button>
+        <button id="btn-help" class="btn" data-i18n="help">操作說明</button>
       </div>
     </div>
 
     <!-- 暫停選單 -->
     <div id="menu-pause" class="overlay hidden">
       <div class="panel">
-        <h2 class="subtitle">遊戲暫停</h2>
-        <button id="btn-resume" class="btn">繼續遊戲</button>
-        <button id="btn-restart-level" class="btn">重新開始本關</button>
-        <button id="btn-quit" class="btn btn-danger">回主選單</button>
+        <h2 class="subtitle" data-i18n="pause_title">遊戲暫停</h2>
+        <button id="btn-resume" class="btn" data-i18n="resume">繼續遊戲</button>
+        <button id="btn-restart-level" class="btn" data-i18n="restart">重新開始本關</button>
+        <button id="btn-quit" class="btn btn-danger" data-i18n="quit">回主選單</button>
       </div>
     </div>
 
     <!-- 過關慶祝視窗 -->
     <div id="menu-level-complete" class="overlay hidden">
       <div class="panel">
-        <h2 class="subtitle" id="complete-title">關卡完成！</h2>
+        <h2 class="subtitle" id="complete-title" data-i18n="complete">關卡完成！</h2>
         <p id="complete-tutorial-title" class="hidden" style="color:#f1c40f; font-size:1.3rem; margin-bottom:15px;"></p>
         <div class="stats-box">
-          <p>本關用時: <span id="stat-level-time" class="highlight">00:00.000</span></p>
-          <p>總計用時: <span id="stat-total-time">00:00.000</span></p>
+          <p><span data-i18n="level_time">本關用時</span>: <span id="stat-level-time" class="highlight">00:00.000</span></p>
+          <p><span data-i18n="total_time">總計用時</span>: <span id="stat-total-time">00:00.000</span></p>
         </div>
         <!-- 新紀錄輸入區 -->
         <div id="record-entry" class="hidden">
@@ -85,8 +85,8 @@
           <input type="text" id="input-player-name" maxlength="10" placeholder="Hero" class="input-text">
           <button id="btn-submit-name" class="btn">登錄紀錄</button>
         </div>
-        <button id="btn-next-level" class="btn">進入下一關</button>
-        <button id="btn-rest" class="btn">休息結算 (存檔)</button>
+        <button id="btn-next-level" class="btn" data-i18n="next_level">進入下一關</button>
+        <button id="btn-rest" class="btn" data-i18n="rest">休息結算 (存檔)</button>
       </div>
     </div>
 
@@ -112,7 +112,7 @@
             <!-- 動態生成 -->
           </tbody>
         </table>
-        <button id="btn-lb-close" class="btn">關閉</button>
+        <button id="btn-lb-close" class="btn" data-i18n="close">關閉</button>
       </div>
     </div>
     
@@ -136,7 +136,7 @@
           <p style="color:#2ecc71;">　　蛇會追蹤燈塔。沒有燈塔時追玩家。</p>
           <p style="color:#2ecc71;">　　面向蛇身按空白鍵攻擊，3次消滅！</p>
         </div>
-        <button id="btn-help-close" class="btn">我知道了</button>
+        <button id="btn-help-close" class="btn" data-i18n="help_close">我知道了</button>
       </div>
     </div>
     
@@ -180,7 +180,7 @@
           </select>
         </div>
 
-        <button id="btn-save-settings" class="btn">儲存並關閉</button>
+        <button id="btn-save-settings" class="btn" data-i18n="save_close">儲存並關閉</button>
       </div>
     </div>
   </div>

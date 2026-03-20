@@ -80,7 +80,7 @@ class UIManager {
       // 過關紀錄輸入
       recordEntry: document.getElementById('record-entry'),
       inputName: document.getElementById('input-player-name'),
-      gmJumpLevel: document.getElementById('gm-jump-level'),
+      gmJumpLevel: document.getElementById('gm-jump-level'), // Ensure this is bound
     };
 
     // 搖框狀態
@@ -112,11 +112,21 @@ class UIManager {
     this.I18N = {
       zh: {
         level: "關卡", time: "時間", dig: "打洞", hint: "提示",
-        pause: "暫停", action: "動作", beacon: "燈塔", settings: "設定"
+        pause: "暫停", action: "動作", beacon: "燈塔", settings: "設定",
+        start: "開始新遊戲", continue: "繼續遊戲", leaderboard: "排行榜", help: "操作說明",
+        pause_title: "遊戲暫停", resume: "繼續遊戲", restart: "重新開始本關", quit: "回主選單",
+        complete: "關卡完成！", level_time: "本關用時", total_time: "總計用時",
+        next_level: "進入下一關", rest: "休息結算 (存檔)", close: "關閉", help_close: "我知道了",
+        save_close: "儲存並關閉"
       },
       en: {
         level: "Level", time: "Time", dig: "Dig", hint: "Hint",
-        pause: "Pause", action: "Action", beacon: "Beacon", settings: "Settings"
+        pause: "Pause", action: "Action", beacon: "Beacon", settings: "Settings",
+        start: "Start New Game", continue: "Continue", leaderboard: "Leaderboard", help: "How to Play",
+        pause_title: "Game Paused", resume: "Resume", restart: "Restart Level", quit: "Main Menu",
+        complete: "Level Complete!", level_time: "Level Time", total_time: "Total Time",
+        next_level: "Next Level", rest: "Rest & Save", close: "Close", help_close: "Got it",
+        save_close: "Save & Close"
       }
     };
 
@@ -447,7 +457,7 @@ class UIManager {
       if (isNewRecord) {
         this.elements.recordEntry.classList.remove('hidden');
         if (this.elements.inputName) {
-          this.elements.inputName.value = '';
+          this.elements.inputName.value = this.game.lastPlayerName || '';
           this.elements.inputName.focus();
         }
       } else {

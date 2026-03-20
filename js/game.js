@@ -31,6 +31,9 @@ class Game {
       firstSnakeAttackReady: false
     };
 
+    // 紀錄上一次輸入的姓名
+    this.lastPlayerName = Storage.loadPlayerName() || '';
+
     // 設定計時器回呼更新 UI
     this.timer.onTick = (ms) => {
       this.ui.updateHUD(this.currentLevel, ms);
@@ -437,6 +440,9 @@ class Game {
    */
   submitHighScore(name) {
     if (this.isGM || this._cheatActivated) return; // 金手指模式不存檔
+    
+    this.lastPlayerName = name;
+    Storage.savePlayerName(name);
     
     const levelMs = this.timer.getCurrentLevelTime();
     Storage.saveToLeaderboard(this.currentLevel, name, levelMs);
