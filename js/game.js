@@ -195,7 +195,7 @@ class Game {
       // 教學 1-5 關不生蛇，停止計時器
       this.enemyManager.spawnInterval = Infinity;
     }
-    // 正式關（7+）保持每 30 秒生成
+    // 正式關（7+）保持每 60 秒生成
 
     // 如果金手指已啟動
     if (this._cheatActivated) {
