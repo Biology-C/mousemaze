@@ -425,7 +425,10 @@ class Game {
       if (config) tutorialTitle = config.title;
     }
 
-    const isNewRecord = Storage.isNewRecord(this.currentLevel, levelMs);
+    // 若開啟金手指或 GM 模式，不記錄排行榜
+    const isCheat = this.isGM || this._cheatActivated;
+    const isNewRecord = isCheat ? false : Storage.isNewRecord(this.currentLevel, levelMs);
+    
     this.ui.showLevelComplete(this.currentLevel, isNewRecord, levelMs, totalMs, tutorialTitle);
   }
 
@@ -433,6 +436,8 @@ class Game {
    * 提交破紀錄名字
    */
   submitHighScore(name) {
+    if (this.isGM || this._cheatActivated) return; // 金手指模式不存檔
+    
     const levelMs = this.timer.getCurrentLevelTime();
     Storage.saveToLeaderboard(this.currentLevel, name, levelMs);
     // 同時記錄遊玩時間

@@ -42,7 +42,8 @@ A pixel-art maze exploration game built with pure JavaScript and HTML5 Canvas. C
 | `Q` | Place Lighthouse (in front) |
 | `Z` | Path hint |
 | `Esc` | Pause |
-| `imsupergm` | GM Mode |
+| `imsupergm` | GM Mode (Skip levels, see full map, monitor stats) |
+| `↑↑↓↓←←→→ba` | Classic Cheat (Infinite Digs) |
 
 ### Mobile/Tablet (Touch)
 *   **Bottom Left**: Analog joystick for movement.
