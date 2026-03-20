@@ -296,6 +296,7 @@ class Game {
       return;
     }
 
+    try {
     // 玩家更新
     this.player.update();
 
@@ -390,6 +391,19 @@ class Game {
 
     if (this.state !== Game.STATE_MENU) {
       this._animationFrameId = requestAnimationFrame(this.gameLoop);
+    }
+
+    } catch (err) {
+      // 除錯用：在畫面上顯示錯誤
+      const canvas = document.getElementById('game-canvas');
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#000';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#ff0000';
+      ctx.font = '20px monospace';
+      ctx.fillText('ERROR: ' + err.message, 20, 40);
+      ctx.fillText('Stack: ' + (err.stack || '').substring(0, 200), 20, 70);
+      console.error('gameLoop error:', err);
     }
   }
 

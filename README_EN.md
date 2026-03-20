@@ -22,9 +22,16 @@ A pixel-art maze exploration game built with pure JavaScript and HTML5 Canvas. C
 *   **⚡ Smart Action Button**: `Space` drills through walls if facing one, or attacks snakes if the path is clear.
 *   **Gadgets**:
     *   🧀 **Dig Cheese**: Refill drill uses.
-    *   🍄 **Magic Mushrooms**: Temporary full-map vision.
-    *   💎 **Raw Ore**: Permanently increase sight radius.
+    *   🍄 **Magic Mushrooms**: Temporary full-map vision + **Permanently** increase hint path distance by 10 cells across levels.
+    *   💎 **Raw Ore**: **Permanently** increase sight radius by 2 cells across levels.
     *   🌀 **Teleporters**: Two-way long-distance travel.
+*   **🧩 Special Tiles & Hazards (Lv6+)**:
+    *   ❓ **Chance Chest (Lv6+)**: Randomly drops items, spawns a snake, or relocates the exit!
+    *   ⚠️ **Exit Shifter (Lv6+)**: Stepping on it instantly teleports the maze exit to a new random location.
+    *   🧱 **Iron Walls (Lv8+)**: Indestructible grey walls; drills won't work here.
+    *   🩸 **Merging Walls (Lv8+)**: Red walls that automatically open and close every 3 seconds. Being crushed instantly kills the player or snakes!
+    *   🔄 **Inverse Tiles (Lv10+)**: Grey striped paths that completely reverse your movement controls (WASD/Arrows).
+    *   ➡️ **One-way Tiles (Lv10+)**: Blue paths with arrows that only allow movement in the specified direction.
 *   **3 Difficulty Levels**: Heaven (21 drills), Normal (15 drills), Famine (9 drills).
 *   **Leaderboard**: Track your best times and earn playtime titles.
 *   **Stuck Detection**: Automatically restarts with a message if you trap yourself.

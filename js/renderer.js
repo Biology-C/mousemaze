@@ -466,21 +466,20 @@ class Renderer {
   }
 
   _drawExitShiftIcon(cx, cy) {
-    const s = this.cellSize * 0.25;
+    const s = this.cellSize * 0.3;
+    
+    // 背景：黃色圓形
     this.ctx.beginPath();
     this.ctx.arc(cx, cy, s, 0, Math.PI * 2);
-    this.ctx.fillStyle = '#9b59b6';
+    this.ctx.fillStyle = '#f1c40f'; // 黃色
     this.ctx.fill();
-    // 中心小圖
-    this.ctx.beginPath();
-    this.ctx.moveTo(cx - s * 0.4, cy);
-    this.ctx.lineTo(cx + s * 0.4, cy);
-    this.ctx.moveTo(cx + s * 0.1, cy - s * 0.3);
-    this.ctx.lineTo(cx + s * 0.4, cy);
-    this.ctx.lineTo(cx + s * 0.1, cy + s * 0.3);
-    this.ctx.strokeStyle = '#fff';
-    this.ctx.lineWidth = 1.5;
-    this.ctx.stroke();
+    
+    // 紅色驚嘆號 !
+    this.ctx.fillStyle = '#e74c3c'; // 紅色
+    this.ctx.font = `bold ${s * 1.5}px monospace`;
+    this.ctx.textAlign = 'center';
+    this.ctx.textBaseline = 'middle';
+    this.ctx.fillText('!', cx, cy + s * 0.1); 
   }
 
   destroy() {
