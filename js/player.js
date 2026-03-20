@@ -248,6 +248,8 @@ class Player {
         } else {
           // 不能移動 (撞牆)：播放輕微回彈效果
           this._playBumpAnimation();
+          // 首次撞牆提示鑽牆技能
+          if (this._onBump) this._onBump();
         }
       }
     }
