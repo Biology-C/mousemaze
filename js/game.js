@@ -45,12 +45,12 @@ class Game {
     // 教學關配置 (前 6 關)
     this.tutorialConfig = [
       null, // padding
-      { name: '移動入門', size: 10, desc: '使用方向鍵或 WASD 移動到金色出口！', title: '🐾 初學者' },
-      { name: '鑽牆技巧', size: 12, desc: '面向牆壁按空白鍵鑽牆！撿起🧀能量起司增加次數。', title: '⛏️ 鑽洞鼠' },
-      { name: '燈塔記號', size: 12, desc: '按 Q 在面前放置燈塔！照亮迷霧，但會變成牆壁。', title: '💡 燈塔守衛' },
-      { name: '道具收集', size: 14, desc: '收集紅香菇🍄透視、藍礦石💎增視野、能量起司🧀增鑽牆！', title: '🎒 探險家' },
-      { name: '傳送與提示', size: 16, desc: '踩上紫色傳送陣移動！按 Z 使用路線提示。', title: '🌀 時空旅者' },
-      { name: '蛇出沒注意', size: 16, desc: '躲避蛇頭！面向蛇身按空白鍵攻擊，3次消滅！用燈塔誘敵。', title: '⚔️ 勇者鼠' },
+      { nameKey: 'tut1_name', size: 10, descKey: 'tut1_desc', titleKey: 'tut1_title' },
+      { nameKey: 'tut2_name', size: 12, descKey: 'tut2_desc', titleKey: 'tut2_title' },
+      { nameKey: 'tut3_name', size: 12, descKey: 'tut3_desc', titleKey: 'tut3_title' },
+      { nameKey: 'tut4_name', size: 14, descKey: 'tut4_desc', titleKey: 'tut4_title' },
+      { nameKey: 'tut5_name', size: 16, descKey: 'tut5_desc', titleKey: 'tut5_title' },
+      { nameKey: 'tut6_name', size: 16, descKey: 'tut6_desc', titleKey: 'tut6_title' },
     ];
 
     // 正式關卡（第 7-18 關）迷宮尺寸
@@ -93,7 +93,7 @@ class Game {
             if (this.player) {
               this.player.drillCount = Infinity;
             }
-            this.ui.showCheatMessage('🐭 金手指啟動！無限鑽牆！');
+            this.ui.showCheatMessage(this.getI18nString('msg_cheat'));
           }
         }
       } else {
@@ -107,10 +107,10 @@ class Game {
           this._gmIndex = 0;
           this.isGM = !this.isGM;
           if (this.isGM) {
-            this.ui.showCheatMessage('👑 GM 模式開啟！');
+            this.ui.showCheatMessage(this.getI18nString('msg_gm_on'));
             this.ui.showGMHUD();
           } else {
-            this.ui.showCheatMessage('GM 模式關閉');
+            this.ui.showCheatMessage(this.getI18nString('msg_gm_off'));
             this.ui.hideGMHUD();
           }
         }
@@ -123,6 +123,15 @@ class Game {
         this.renderer.disableFog = !this.renderer.disableFog;
       }
     });
+  }
+
+  /**
+   * 取得 i18n 多國語言字串
+   */
+  getI18nString(key) {
+    const lang = (typeof gameSettings !== 'undefined' ? gameSettings.language : 'zh') || 'zh';
+    const dict = this.ui.I18N[lang] || this.ui.I18N.zh;
+    return dict[key] || '';
   }
 
   /**
@@ -217,13 +226,12 @@ class Game {
 
     // 蛇出現提示
     this.enemyManager.onSnakeSpawn = () => {
-      const msg = gameSettings.language === 'en' ? '🐍 A snake in my maze!' : '🐍 我的迷宮裡有條蛇';
-      this.ui.showGameMessage(msg);
+      this.ui.showGameMessage(this.getI18nString('msg_snake_spawn'));
     };
 
     // 蛇碰到玩家 → 失敗
     this.enemyManager.onPlayerEaten = () => {
-      this.handlePlayerDeath('🐍 這隻老鼠被蛇吃了。');
+      this.handlePlayerDeath(this.getI18nString('msg_eaten'));
     };
 
     if (this.isTutorialLevel() && this.currentLevel === 6) {
@@ -252,7 +260,7 @@ class Game {
     if (this.isTutorialLevel()) {
       const config = this.tutorialConfig[this.currentLevel];
       if (config) {
-        this.ui.showGameMessage(`📖 ${config.name}：${config.desc}`);
+        this.ui.showGameMessage(`📖 ${this.getI18nString(config.nameKey)}：${this.getI18nString(config.descKey)}`);
       }
     }
 
@@ -327,7 +335,7 @@ class Game {
     // 困死偵測（放燈塔後）
     if (this.itemManager && !this.player.isMoving) {
       if (this.itemManager.isPlayerTrapped(this.player.x, this.player.y)) {
-        this.handlePlayerDeath('🧱 這隻老鼠把自己困死了。');
+        this.handlePlayerDeath(this.getI18nString('msg_trapped'));
         return;
       }
     }
@@ -431,7 +439,7 @@ class Game {
     let tutorialTitle = null;
     if (this.isTutorialLevel()) {
       const config = this.tutorialConfig[this.currentLevel];
-      if (config) tutorialTitle = config.title;
+      if (config) tutorialTitle = this.getI18nString(config.titleKey);
     }
 
     // 若開啟金手指或 GM 模式，不記錄排行榜

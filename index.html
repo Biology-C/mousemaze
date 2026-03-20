@@ -93,11 +93,12 @@
     <!-- 排行榜視窗 -->
     <div id="menu-leaderboard-view" class="overlay hidden">
       <div class="panel panel-large">
-        <h2 class="subtitle">最佳探索者</h2>
+        <button id="btn-lb-back" class="btn-back">⬅️</button>
+        <h2 class="subtitle" data-i18n="lb_title">最佳探索者</h2>
         <!-- 分頁 tab -->
         <div class="lb-tabs">
-          <button id="lb-tab-level" class="lb-tab active">關卡紀錄</button>
-          <button id="lb-tab-time" class="lb-tab">遊玩時間</button>
+          <button id="lb-tab-level" class="lb-tab active" data-i18n="lb_tab_level">關卡紀錄</button>
+          <button id="lb-tab-time" class="lb-tab" data-i18n="lb_tab_time">遊玩時間</button>
         </div>
         <div class="leaderboard-controls">
           <button id="btn-lb-prev" class="btn-small">&lt;</button>
@@ -119,22 +120,22 @@
     <!-- 操作說明視窗 -->
     <div id="menu-help" class="overlay hidden">
       <div class="panel panel-large">
-        <h2 class="subtitle">操作說明</h2>
+        <h2 class="subtitle" data-i18n="help_title">操作說明</h2>
         <div class="stats-box" style="text-align: left;">
-          <p>🎮 <b>移動 (Move)</b>：[W][A][S][D] / [Arrows]</p>
-          <p>⚡ <b>空白鍵 (Space)</b>：面前有牆→打洞 (消耗次數)；無牆→攻擊 (不消耗)</p>
-          <p>🔦 <b>燈塔 (Beacon)</b>：[Q] 鍵 (照亮迷霧，但會封路)</p>
-          <p>💡 <b>提示 (Hint)</b>：[Z] 鍵 (顯示路線指引)</p>
-          <p>⏸️ <b>暫停 (Pause)</b>：[ESC] 鍵</p>
+          <p data-i18n="help_move">🎮 <b>移動 (Move)</b>：[W][A][S][D] / [Arrows]</p>
+          <p data-i18n="help_space">⚡ <b>空白鍵 (Space)</b>：面前有牆→打洞 (消耗次數)；無牆→攻擊 (不消耗)</p>
+          <p data-i18n="help_beacon">🔦 <b>燈塔 (Beacon)</b>：[Q] 鍵 (照亮迷霧，但會封路)</p>
+          <p data-i18n="help_hint">💡 <b>提示 (Hint)</b>：[Z] 鍵 (顯示路線指引)</p>
+          <p data-i18n="help_pause">⏸️ <b>暫停 (Pause)</b>：[ESC] 鍵</p>
           <hr style="border-color:var(--panel-border); margin: 15px 0;">
-          <p style="color:#e74c3c;">🍄 <b>紅香菇 (Mushroom)</b>：短暫獲得全圖透視能力</p>
-          <p style="color:#3498db;">💎 <b>藍礦石 (Ore)</b>：永久增加視野範圍</p>
-          <p style="color:#f39c12;">🧀 <b>能量起司 (Cheese)</b>：額外增加 1 次打洞次數</p>
-          <p style="color:#9b59b6;">🌀 <b>紫光圈 (Portal)</b>：雙向遠距離傳送陣</p>
+          <p style="color:#e74c3c;" data-i18n="help_mushroom">🍄 <b>紅香菇 (Mushroom)</b>：短暫獲得全圖透視能力</p>
+          <p style="color:#3498db;" data-i18n="help_ore">💎 <b>藍礦石 (Ore)</b>：永久增加視野範圍</p>
+          <p style="color:#f39c12;" data-i18n="help_cheese">🧀 <b>能量起司 (Cheese)</b>：額外增加 1 次打洞次數</p>
+          <p style="color:#9b59b6;" data-i18n="help_portal">🌀 <b>紫光圈 (Portal)</b>：雙向遠距離傳送陣</p>
           <hr style="border-color:var(--panel-border); margin: 15px 0;">
-          <p style="color:#2ecc71;">🐍 <b>蛇 (Snake)</b>：每60秒隨機出現，被碰到就失敗！</p>
-          <p style="color:#2ecc71;">　　蛇會追蹤燈塔。沒有燈塔時追玩家。</p>
-          <p style="color:#2ecc71;">　　面向蛇身按空白鍵攻擊，3次消滅！</p>
+          <p style="color:#2ecc71;" data-i18n="help_snake1">🐍 <b>蛇 (Snake)</b>：每60秒隨機出現，被碰到就失敗！</p>
+          <p style="color:#2ecc71;" data-i18n="help_snake2">　　蛇會追蹤燈塔。沒有燈塔時追玩家。</p>
+          <p style="color:#2ecc71;" data-i18n="help_snake3">　　面向蛇身按空白鍵攻擊，3次消滅！</p>
         </div>
         <button id="btn-help-close" class="btn" data-i18n="help_close">我知道了</button>
       </div>

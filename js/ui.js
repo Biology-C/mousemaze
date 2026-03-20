@@ -122,7 +122,33 @@ class UIManager {
         label_theme: "主題色系 :", label_difficulty: "難易度 :",
         speed_low: "慢 (0.15)", speed_mid: "中 (0.2)", speed_high: "快 (0.25)",
         theme_dark: "暗色 (高對比)", theme_classic: "經典 (綠/黑)", theme_retro: "復古 (灰/白)",
-        diff_heaven: "天堂 (打洞21次)", diff_normal: "一般 (打洞15次)", diff_famine: "飢荒 (打洞9次)"
+        diff_heaven: "天堂 (打洞21次)", diff_normal: "一般 (打洞15次)", diff_famine: "飢荒 (打洞9次)",
+        lb_title: "最佳探索者", lb_tab_level: "關卡紀錄", lb_tab_time: "遊玩時間", 
+        help_title: "操作說明",
+        help_move: "🎮 移動 (Move)：[W][A][S][D] / [Arrows]",
+        help_space: "⚡ 空白鍵 (Space)：面前有牆→打洞 (消耗次數)；無牆→攻擊 (不消耗)",
+        help_beacon: "🔦 燈塔 (Beacon)：[Q] 鍵 (照亮迷霧，但會封路)",
+        help_hint: "💡 提示 (Hint)：[Z] 鍵 (顯示路線指引)",
+        help_pause: "⏸️ 暫停 (Pause)：[ESC] 鍵",
+        help_mushroom: "🍄 紅香菇 (Mushroom)：短暫獲得全圖透視能力",
+        help_ore: "💎 藍礦石 (Ore)：永久增加視野範圍",
+        help_cheese: "🧀 能量起司 (Cheese)：額外增加 1 次打洞次數",
+        help_portal: "🌀 紫光圈 (Portal)：雙向遠距離傳送陣",
+        help_snake1: "🐍 蛇 (Snake)：每60秒隨機出現，被碰到就失敗！",
+        help_snake2: "　　蛇會追蹤燈塔。沒有燈塔時追玩家。",
+        help_snake3: "　　面向蛇身按空白鍵攻擊，3次消滅！",
+        tut1_name: "移動入門", tut1_desc: "使用方向鍵或 WASD 移動到金色出口！", tut1_title: "🐾 初學者",
+        tut2_name: "鑽牆技巧", tut2_desc: "面向牆壁按空白鍵鑽牆！撿起🧀能量起司增加次數。", tut2_title: "⛏️ 鑽洞鼠",
+        tut3_name: "燈塔記號", tut3_desc: "按 Q 在面前放置燈塔！照亮迷霧，但會變成牆壁。", tut3_title: "💡 燈塔守衛",
+        tut4_name: "道具收集", tut4_desc: "收集紅香菇🍄透視、藍礦石💎增視野、能量起司🧀增鑽牆！", tut4_title: "🎒 探險家",
+        tut5_name: "傳送與提示", tut5_desc: "踩上紫色傳送陣移動！按 Z 使用路線提示。", tut5_title: "🌀 時空旅者",
+        tut6_name: "蛇出沒注意", tut6_desc: "躲避蛇頭！面向蛇身按空白鍵攻擊，3次消滅！用燈塔誘敵。", tut6_title: "⚔️ 勇者鼠",
+        msg_snake_spawn: "🐍 我的迷宮裡有條蛇",
+        msg_eaten: "🐍 這隻老鼠被蛇吃了。",
+        msg_trapped: "🧱 這隻老鼠把自己困死了。",
+        msg_cheat: "🐭 金手指啟動！無限鑽牆！",
+        msg_gm_on: "👑 GM 模式開啟！",
+        msg_gm_off: "GM 模式關閉"
       },
       en: {
         level: "Level", time: "Time", dig: "Dig", hint: "Hint",
@@ -136,7 +162,33 @@ class UIManager {
         label_theme: "Theme :", label_difficulty: "Difficulty :",
         speed_low: "Slow (0.15)", speed_mid: "Mid (0.2)", speed_high: "Fast (0.25)",
         theme_dark: "Dark (High Contrast)", theme_classic: "Classic (Green/Black)", theme_retro: "Retro (Gray/White)",
-        diff_heaven: "Heaven (Dig x21)", diff_normal: "Normal (Dig x15)", diff_famine: "Famine (Dig x9)"
+        diff_heaven: "Heaven (Dig x21)", diff_normal: "Normal (Dig x15)", diff_famine: "Famine (Dig x9)",
+        lb_title: "Top Explorers", lb_tab_level: "Level Records", lb_tab_time: "Play Time",
+        help_title: "How to Play",
+        help_move: "🎮 Move: [W][A][S][D] / [Arrows]",
+        help_space: "⚡ Space: Facing wall → Dig (uses drill); No wall → Attack",
+        help_beacon: "🔦 Beacon: [Q] (Illuminates fog, but blocks path)",
+        help_hint: "💡 Hint: [Z] (Shows route guide)",
+        help_pause: "⏸️ Pause: [ESC]",
+        help_mushroom: "🍄 Mushroom: Grants temporary full map vision",
+        help_ore: "💎 Ore: Permanently increases sight radius",
+        help_cheese: "🧀 Cheese: Adds +1 extra dig count",
+        help_portal: "🌀 Portal: Two-way long-distance teleportation",
+        help_snake1: "🐍 Snake: Appears randomly every 60s, touch means game over!",
+        help_snake2: "　　Snakes chase beacons. Without beacons, they chase you.",
+        help_snake3: "　　Face its body and press Space to attack, 3 hits to kill!",
+        tut1_name: "Movement Basics", tut1_desc: "Use arrow keys or WASD to reach the golden exit!", tut1_title: "🐾 Beginner",
+        tut2_name: "Digging Walls", tut2_desc: "Face a wall and press Space to dig! Pick up 🧀 Cheese to increase uses.", tut2_title: "⛏️ Digger Mouse",
+        tut3_name: "Beacon Marker", tut3_desc: "Press Q to place a beacon! Illuminates fog, but turns into a wall.", tut3_title: "💡 Lighthouse Keeper",
+        tut4_name: "Item Collection", tut4_desc: "Collect 🍄 Mushroom for vision, 💎 Ore for sight, 🧀 Cheese for digs!", tut4_title: "🎒 Explorer",
+        tut5_name: "Teleport and Hint", tut5_desc: "Step on purple portals! Press Z to use route hints.", tut5_title: "🌀 Time Traveler",
+        tut6_name: "Beware of Snakes", tut6_desc: "Dodge the snake! Face it and press Space to attack (3 hits)! Use beacons to lure.", tut6_title: "⚔️ Brave Mouse",
+        msg_snake_spawn: "🐍 A snake in my maze!",
+        msg_eaten: "🐍 This mouse was eaten by a snake.",
+        msg_trapped: "🧱 This mouse trapped itself to death.",
+        msg_cheat: "🐭 Cheat activated! Infinite digs!",
+        msg_gm_on: "👑 GM Mode ON!",
+        msg_gm_off: "GM Mode OFF"
       }
     };
 
@@ -192,7 +244,8 @@ class UIManager {
     });
 
     // 排行榜選單
-    document.getElementById('btn-lb-close').addEventListener('click', () => this.hideMenu('leaderboard'));
+    document.getElementById('btn-lb-close').addEventListener('click', () => this.showMenu('main'));
+    document.getElementById('btn-lb-back').addEventListener('click', () => this.showMenu('main'));
     document.getElementById('btn-lb-prev').addEventListener('click', () => {
       if (this.currentLbLevel > 1) this.showLeaderboard(this.currentLbLevel - 1);
     });
@@ -634,17 +687,24 @@ class UIManager {
     // 隱藏關卡切換按鈕
     document.getElementById('btn-lb-prev').style.display = 'none';
     document.getElementById('btn-lb-next').style.display = 'none';
-    this.elements.lbLevelDisplay.textContent = '遊玩時間';
+    this.elements.lbLevelDisplay.textContent = gameSettings.language === 'en' ? 'Play Time' : '遊玩時間';
 
     const data = Storage.getPlayTimeRecords();
     this.elements.lbTableBody.innerHTML = '';
     
     // 更新表頭
     const thead = document.querySelector('#leaderboard-table thead tr');
-    if (thead) thead.innerHTML = '<th>名次</th><th>名字</th><th>時間</th><th>稱號</th>';
+    if (thead) {
+      const rankText = gameSettings.language === 'en' ? 'Rank' : '名次';
+      const nameText = gameSettings.language === 'en' ? 'Name' : '名字';
+      const timeText = gameSettings.language === 'en' ? 'Time' : '時間';
+      const titleText = gameSettings.language === 'en' ? 'Title' : '稱號';
+      thead.innerHTML = `<th>${rankText}</th><th>${nameText}</th><th>${timeText}</th><th>${titleText}</th>`;
+    }
     
     if (data.length === 0) {
-      this.elements.lbTableBody.innerHTML = '<tr><td colspan="4" style="text-align:center">尚無紀錄</td></tr>';
+      const noRecordsTarget = gameSettings.language === 'en' ? 'No records yet' : '尚無紀錄';
+      this.elements.lbTableBody.innerHTML = `<tr><td colspan="4" style="text-align:center">${noRecordsTarget}</td></tr>`;
     } else {
       data.forEach((row, idx) => {
         const tr = document.createElement('tr');
