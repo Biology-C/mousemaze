@@ -558,10 +558,10 @@ class UIManager {
   /**
    * 關卡排行榜
    */
-  showLeaderboard(level) {
+  async showLeaderboard(level) {
     this.currentLbLevel = level;
     this.currentLbTab = 'level';
-    this.elements.lbLevelDisplay.textContent = `關卡 ${level}`;
+    this.elements.lbLevelDisplay.textContent = gameSettings.language === 'en' ? `Level ${level} (Syncing...)` : `關卡 ${level} (同步中...)`;
     
     // 更新 tab 樣式
     if (this.elements.lbTabLevel) this.elements.lbTabLevel.classList.add('active');
@@ -571,15 +571,37 @@ class UIManager {
     document.getElementById('btn-lb-next').style.display = '';
     this.elements.lbLevelDisplay.style.display = '';
 
-    const data = Storage.getLeaderboard(level);
+    // 優先從雲端讀取，失敗則回退到本地
+    let data = [];
+    try {
+      if (typeof CloudStorage !== 'undefined') {
+        const cloudData = await CloudStorage.getLeaderboard();
+        if (cloudData && cloudData[level]) {
+          data = cloudData[level];
+        } else {
+          data = Storage.getLeaderboard(level);
+        }
+      } else {
+        data = Storage.getLeaderboard(level);
+      }
+    } catch (err) {
+      data = Storage.getLeaderboard(level);
+    }
+
+    this.elements.lbLevelDisplay.textContent = gameSettings.language === 'en' ? `Level ${level}` : `關卡 ${level}`;
     this.elements.lbTableBody.innerHTML = '';
     
     // 更新表頭
     const thead = document.querySelector('#leaderboard-table thead tr');
-    if (thead) thead.innerHTML = '<th>名次</th><th>名字</th><th>時間</th>';
+    if (thead) {
+      const rankText = gameSettings.language === 'en' ? 'Rank' : '名次';
+      const nameText = gameSettings.language === 'en' ? 'Name' : '名字';
+      const timeText = gameSettings.language === 'en' ? 'Time' : '時間';
+      thead.innerHTML = `<th>${rankText}</th><th>${nameText}</th><th>${timeText}</th>`;
+    }
     
     if (data.length === 0) {
-      this.elements.lbTableBody.innerHTML = '<tr><td colspan="3" style="text-align:center">尚無紀錄</td></tr>';
+      this.elements.lbTableBody.innerHTML = `<tr><td colspan="3" style="text-align:center">${gameSettings.language === 'en' ? 'No records yet' : '尚無紀錄'}</td></tr>`;
     } else {
       data.forEach((row, idx) => {
         const tr = document.createElement('tr');

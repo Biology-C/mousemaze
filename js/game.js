@@ -452,6 +452,11 @@ class Game {
     
     const levelMs = this.timer.getCurrentLevelTime();
     Storage.saveToLeaderboard(this.currentLevel, name, levelMs);
+    
+    // 同步至全球排行榜 (Google Sheets)
+    if (typeof CloudStorage !== 'undefined') {
+      CloudStorage.submitScore(this.currentLevel, name, levelMs);
+    }
     // 同時記錄遊玩時間
     Storage.savePlayTime(name, this.timer.getTotalTime());
     this.ui.hideRecordEntry();
