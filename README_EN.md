@@ -1,4 +1,4 @@
-# 🐭 Pixel Mouse Maze
+# 🐭 Bio-Logic Mouse Co.
 
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-Live-brightgreen)](https://biology-c.github.io/mousemaze/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)

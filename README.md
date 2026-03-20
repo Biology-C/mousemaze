@@ -1,9 +1,7 @@
-# 🐭 像素地城：動態迷宮 (Pixel Mouse Maze)
-
-[![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-Live-brightgreen)](https://biology-c.github.io/mousemaze/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
-| [繁體中文](README.md) | [English](README_EN.md) | [日本語](README_JP.md) |
+# 🐭 Bio-Logic Mouse Co.
+---
+| [繁體中文](README.md) | [English](README_EN.md) |
+---
 
 ---
 
