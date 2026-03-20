@@ -80,6 +80,7 @@ class UIManager {
       // 過關紀錄輸入
       recordEntry: document.getElementById('record-entry'),
       inputName: document.getElementById('input-player-name'),
+      gmJumpLevel: document.getElementById('gm-jump-level'),
     };
 
     // 搖框狀態
@@ -93,7 +94,34 @@ class UIManager {
     this.bindEvents();
     this.checkContinueBtn();
     
+    // 多語系提示文案 (僅保留 zh, en)
+    this.HINT_TEXTS = {
+      zh: {
+        beacon: "燈塔會照亮，但也會封路。",
+        snakeSeen: "蛇優先追燈塔，沒有燈塔時才追你。",
+        attack: "現在可攻擊！"
+      },
+      en: {
+        beacon: "Lighthouses illuminate, but also block paths.",
+        snakeSeen: "Snakes prioritize lighthouses. They chase you only if none are near.",
+        attack: "Attack now!"
+      }
+    };
+
+    // 介面全域翻譯
+    this.I18N = {
+      zh: {
+        level: "關卡", time: "時間", dig: "打洞", hint: "提示",
+        pause: "暫停", action: "動作", beacon: "燈塔", settings: "設定"
+      },
+      en: {
+        level: "Level", time: "Time", dig: "Dig", hint: "Hint",
+        pause: "Pause", action: "Action", beacon: "Beacon", settings: "Settings"
+      }
+    };
+
     window.addEventListener('resize', () => this.checkMobileControls());
+    this.updateUILanguage();
   }
 
   checkMobileControls() {
@@ -184,6 +212,19 @@ class UIManager {
         this.showSettings();
       }, { passive: false });
       this.elements.btnSkillSettings.addEventListener('mousedown', () => this.showSettings());
+    }
+
+    // GM 跳關 Enter
+    if (this.elements.gmJumpLevel) {
+      this.elements.gmJumpLevel.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          const lv = parseInt(this.elements.gmJumpLevel.value);
+          if (!isNaN(lv)) {
+            this.game.skipToLevel(lv);
+            this.elements.gmJumpLevel.blur();
+          }
+        }
+      });
     }
   }
 
@@ -447,14 +488,7 @@ class UIManager {
     gameSettings.difficulty = this.elements.selectDifficulty.value;
     gameSettings.language = this.elements.selectLanguage.value; // Added language setting
     gameSettings.save();
-    
-    if (this.game.player) {
-      this.game.player.speed = gameSettings.speed;
-    }
-    if (this.game.renderer) {
-      this.game.renderer.setThemeColors();
-    }
-    
+    this.updateUILanguage(); // 套用語言變更
     this.hideMenu('settings');
     
     const from = this._settingsCalledFrom;
@@ -464,6 +498,25 @@ class UIManager {
       this.showMenu('pause');
     } else {
       this.showMenu('main');
+    }
+  }
+
+  // 更新所有帶有 data-i18n 屬性的元素文字
+  updateUILanguage() {
+    const lang = gameSettings.language || 'zh';
+    const dict = this.I18N[lang] || this.I18N.zh;
+    
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      if (dict[key]) {
+        el.textContent = dict[key];
+      }
+    });
+
+    // 特殊處理：如果有外部按鈕標籤
+    if (this.elements.btnPause) {
+      const pauseText = lang === 'en' ? 'Pause' : '暫停';
+      this.elements.btnPause.innerHTML = `<span data-i18n="pause">${pauseText}</span> (ESC)`;
     }
   }
 
@@ -616,6 +669,21 @@ class UIManager {
       el.classList.remove('show');
       this._hintTimer = null;
     }, duration);
+  }
+
+  // 更新介面語言
+  updateUILanguage() {
+    const lang = gameSettings.language || 'zh';
+    const dict = this.I18N[lang] || this.I18N.zh;
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      if (key && dict[key]) el.textContent = dict[key];
+    });
+    // 暫停鈕特殊處理 (含 ESC 提示)
+    if (this.hud.btnPause) {
+      const label = dict.pause || '暫停';
+      this.hud.btnPause.innerHTML = `<span data-i18n="pause">${label}</span> (ESC)`;
+    }
   }
 
   /**

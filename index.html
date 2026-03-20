@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>像素地城迷宮</title>
+  <title>Bio-Logic Mouse Co.</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DotGothic16&display=swap" rel="stylesheet">
@@ -17,10 +17,10 @@
     
     <!-- 抬頭顯示器 (HUD) -->
     <div id="hud" class="hidden">
-      <div class="hud-item">關卡: <span id="hud-level">1</span>/18</div>
-      <div class="hud-item">時間: <span id="hud-time">00:00.000</span></div>
-      <div class="hud-item" id="hud-skill">鑽牆:<span id="hud-drill">15</span> 提示:<span id="hud-hint">5</span></div>
-      <button id="btn-pause" class="btn-small">暫停 (ESC)</button>
+      <div class="hud-item"><span data-i18n="level">關卡</span>: <span id="hud-level">1</span>/18</div>
+      <div class="hud-item"><span data-i18n="time">時間</span>: <span id="hud-time">00:00.000</span></div>
+      <div class="hud-item" id="hud-skill"><span data-i18n="dig">打洞</span>:<span id="hud-drill">15</span> <span data-i18n="hint">提示</span>:<span id="hud-hint">5</span></div>
+      <button id="btn-pause" class="btn-small"><span data-i18n="pause">暫停</span> (ESC)</button>
     </div>
 
     <!-- GM HUD -->
@@ -29,6 +29,7 @@
       <p>速度: <span id="gm-speed">0.2</span></p>
       <p>道具數: <span id="gm-item-count">0</span></p>
       <p>迷霧開啟: <span id="gm-fog-status">是</span> (F 切換)</p>
+      <p>跳關: <input type="number" id="gm-jump-level" style="width: 40px; background: rgba(0,0,0,0.5); color: #0f0; border: 1px solid #0f0; font-family: monospace; padding: 2px;"></p>
       <canvas id="gm-minimap" width="150" height="150"></canvas>
     </div>
 
@@ -41,16 +42,16 @@
         </div>
       </div>
       <!-- 圍繞搖桿的功能鍵 -->
-      <button id="btn-skill-drill" class="action-btn drill" title="鑽牆/攻擊">⚡<br><span>動作</span></button>
-      <button id="btn-skill-hint" class="action-btn hint" title="提示">💡<br><span>提示</span></button>
-      <button id="btn-skill-mark" class="action-btn mark" title="燈塔">🔦<br><span>燈塔</span></button>
-      <button id="btn-skill-settings" class="action-btn settings" title="設定">⚙️<br><span>設定</span></button>
+      <button id="btn-skill-drill" class="action-btn drill" title="打洞/攻擊">⚡<br><span data-i18n="action">動作</span></button>
+      <button id="btn-skill-hint" class="action-btn hint" title="提示">💡<br><span data-i18n="hint">提示</span></button>
+      <button id="btn-skill-mark" class="action-btn mark" title="燈塔">🔦<br><span data-i18n="beacon">燈塔</span></button>
+      <button id="btn-skill-settings" class="action-btn settings" title="設定">⚙️<br><span data-i18n="settings">設定</span></button>
     </div>
 
     <!-- 主選單 -->
     <div id="menu-main" class="overlay">
       <div class="panel">
-        <h1 class="title">像素地城<br>迷宮</h1>
+        <h1 class="title">Bio-Logic<br>Mouse Co.</h1>
         <button id="btn-start" class="btn">開始新遊戲</button>
         <button id="btn-continue" class="btn hidden">繼續遊戲</button>
         <button id="btn-leaderboard" class="btn">排行榜</button>
@@ -120,18 +121,18 @@
       <div class="panel panel-large">
         <h2 class="subtitle">操作說明</h2>
         <div class="stats-box" style="text-align: left;">
-          <p>🎮 <b>移動</b>：[W][A][S][D] 或 [方向鍵]</p>
-          <p>⚡ <b>空白鍵</b>：面前有牆→鑽牆(消耗次數)；面前無牆→攻擊(不消耗)</p>
-          <p>🔦 <b>燈塔</b>：[Q] 鍵 (在面前放置燈塔，照亮迷霧，但會變成牆壁)</p>
-          <p>💡 <b>提示</b>：[Z] 鍵 (顯示路線指引)</p>
-          <p>⏸️ <b>暫停</b>：[ESC] 鍵</p>
+          <p>🎮 <b>移動 (Move)</b>：[W][A][S][D] / [Arrows]</p>
+          <p>⚡ <b>空白鍵 (Space)</b>：面前有牆→打洞 (消耗次數)；無牆→攻擊 (不消耗)</p>
+          <p>🔦 <b>燈塔 (Beacon)</b>：[Q] 鍵 (照亮迷霧，但會封路)</p>
+          <p>💡 <b>提示 (Hint)</b>：[Z] 鍵 (顯示路線指引)</p>
+          <p>⏸️ <b>暫停 (Pause)</b>：[ESC] 鍵</p>
           <hr style="border-color:var(--panel-border); margin: 15px 0;">
-          <p style="color:#e74c3c;">🍄 <b>紅香菇</b>：短暫獲得全圖透視能力</p>
-          <p style="color:#3498db;">💎 <b>藍礦石</b>：永久增加視野範圍</p>
-          <p style="color:#f39c12;">🧀 <b>能量起司</b>：增加 1 次可鑽牆次數</p>
-          <p style="color:#9b59b6;">🌀 <b>紫光圈</b>：雙向遠距離傳送陣</p>
+          <p style="color:#e74c3c;">🍄 <b>紅香菇 (Mushroom)</b>：短暫獲得全圖透視能力</p>
+          <p style="color:#3498db;">💎 <b>藍礦石 (Ore)</b>：永久增加視野範圍</p>
+          <p style="color:#f39c12;">🧀 <b>能量起司 (Cheese)</b>：額外增加 1 次打洞次數</p>
+          <p style="color:#9b59b6;">🌀 <b>紫光圈 (Portal)</b>：雙向遠距離傳送陣</p>
           <hr style="border-color:var(--panel-border); margin: 15px 0;">
-          <p style="color:#2ecc71;">🐍 <b>蛇</b>：每60秒隨機出現，被碰到就失敗！</p>
+          <p style="color:#2ecc71;">🐍 <b>蛇 (Snake)</b>：每60秒隨機出現，被碰到就失敗！</p>
           <p style="color:#2ecc71;">　　蛇會追蹤燈塔。沒有燈塔時追玩家。</p>
           <p style="color:#2ecc71;">　　面向蛇身按空白鍵攻擊，3次消滅！</p>
         </div>
@@ -150,7 +151,6 @@
           <select id="setting-lang" class="input-select">
             <option value="zh">繁體中文</option>
             <option value="en">English</option>
-            <option value="ja">日本語</option>
           </select>
         </div>
 
@@ -174,9 +174,9 @@
         <div class="setting-group">
           <label>難易度：</label>
           <select id="setting-difficulty" class="input-select">
-            <option value="heaven">天堂 (道具x2, 鑽牆21次)</option>
-            <option value="normal">一般 (鑽牆15次)</option>
-            <option value="famine">飢荒 (道具x0.5, 鑽牆9次)</option>
+            <option value="heaven">天堂 (道具x2, 打洞21次)</option>
+            <option value="normal">一般 (打洞15次)</option>
+            <option value="famine">飢荒 (道具x0.5, 打洞9次)</option>
           </select>
         </div>
 

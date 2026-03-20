@@ -160,6 +160,19 @@ class Game {
   }
 
   /**
+   * 跳轉至指定關卡 (GM 功能)
+   * @param {number} n 
+   */
+  skipToLevel(n) {
+    if (n < 1) n = 1;
+    if (n > 18) n = 18;
+    this.currentLevel = n;
+    this.timer.resetLevelTime();
+    this.startLevel();
+    this.ui.showCheatMessage(gameSettings.language === 'en' ? `Jump to Level ${n}` : `跳轉至第 ${n} 關`);
+  }
+
+  /**
    * 初始化並進入這關
    */
   startLevel() {
@@ -195,7 +208,8 @@ class Game {
 
     // 蛇出現提示
     this.enemyManager.onSnakeSpawn = () => {
-      this.ui.showGameMessage('🐍 我的迷宮裡有條蛇');
+      const msg = gameSettings.language === 'en' ? '🐍 A snake in my maze!' : '🐍 我的迷宮裡有條蛇';
+      this.ui.showGameMessage(msg);
     };
 
     // 蛇碰到玩家 → 失敗
