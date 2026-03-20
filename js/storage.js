@@ -139,6 +139,14 @@ const Storage = {
     if (minutes < 60)  return '🏰 地城征服者';
     if (minutes < 120) return '👑 迷宮王者';
     return '🌟 傳奇先鋒';
+  },
+
+  savePlayerName(name) {
+    localStorage.setItem('maze_last_name', name);
+  },
+
+  loadPlayerName() {
+    return localStorage.getItem('maze_last_name') || '';
   }
 };
 
