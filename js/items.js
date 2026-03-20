@@ -5,9 +5,10 @@
  */
 
 class ItemManager {
-  constructor(maze, player) {
+  constructor(maze, player, game) {
     this.maze = maze;
     this.player = player;
+    this.game = game;
     
     this.items = [];       // 地圖上的道具 (香菇、礦石、能量起司)
     this.breadcrumbs = []; // 玩家留下的燈塔記號
@@ -176,6 +177,13 @@ class ItemManager {
           }
         }
       }
+    }
+
+    // 觸發首輪引導提示
+    if (this.game && this.game.tutorialHints && !this.game.tutorialHints.firstBeaconPlaced) {
+      this.game.tutorialHints.firstBeaconPlaced = true;
+      this.game.ui.showHint("beacon");
+      this.game.saveProgress();
     }
 
     return true;

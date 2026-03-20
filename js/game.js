@@ -18,11 +18,18 @@ class Game {
     // 模組
     this.ui = new UIManager(this);
     this.renderer = new Renderer('game-canvas');
-    this.timer = new GameTimer();
+    this.timer = new GameTimer(); // Keep GameTimer for now, as the snippet's Timer might be a future change or typo.
     this.maze = null;
     this.player = null;
     this.itemManager = null;
     this.enemyManager = null;
+
+    // 首輪引導旗標
+    this.tutorialHints = {
+      firstBeaconPlaced: false,
+      firstSnakeSeen: false,
+      firstSnakeAttackReady: false
+    };
 
     // 設定計時器回呼更新 UI
     this.timer.onTick = (ms) => {
@@ -128,6 +135,11 @@ class Game {
   startNewGame() {
     this.currentLevel = 1;
     this.timer.setTotalTime(0);
+    this.tutorialHints = {
+      firstBeaconPlaced: false,
+      firstSnakeSeen: false,
+      firstSnakeAttackReady: false
+    };
     Storage.clearSave();
     this.startLevel();
   }
@@ -140,6 +152,9 @@ class Game {
     if (save) {
       this.currentLevel = save.level;
       this.timer.setTotalTime(save.totalTimeMs);
+      if (save.tutorialHints) {
+        this.tutorialHints = { ...this.tutorialHints, ...save.tutorialHints };
+      }
       this.startLevel();
     }
   }
@@ -165,7 +180,7 @@ class Game {
     this.player = new Player(this.maze.start.x, this.maze.start.y, this.renderer.cellSize, this.maze);
 
     // 3. 初始化道具管理器
-    this.itemManager = new ItemManager(this.maze, this.player);
+    this.itemManager = new ItemManager(this.maze, this.player, this);
     this.player.itemManager = this.itemManager;
 
     if (this.isTutorialLevel()) {
@@ -238,6 +253,52 @@ class Game {
     // 敵人更新
     if (this.enemyManager) {
       this.enemyManager.update();
+      
+      // 首輪引導：遇蛇提示 (firstSnakeSeen)
+      // 邏輯：檢查是否有任何蛇在玩家視野半徑內 (渲染器已算好 visionRadius)
+      if (!this.tutorialHints.firstSnakeSeen) {
+        const snakes = this.enemyManager.snakes;
+        const playerVision = this.player.hasMagicVision ? Infinity : this.player.permanentSightRadius;
+        
+        for (const snake of snakes) {
+          const dx = snake.x - this.player.x;
+          const dy = snake.y - this.player.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          
+          if (dist <= playerVision) {
+            this.tutorialHints.firstSnakeSeen = true;
+            this.ui.showHint("snakeSeen", 3500);
+            this.saveProgress();
+            
+            // 加入 0.8s 緩衝：暫時降低蛇速
+            this.enemyManager.setTemporaryBuffer(800);
+            break;
+          }
+        }
+      }
+
+      // 首輪引導：攻擊提示 (firstSnakeAttackReady)
+      // 邏輯：玩家面向蛇且無牆
+      if (!this.tutorialHints.firstSnakeAttackReady) {
+        const dir = this.maze.DIRECTIONS[this.player.facing];
+        const tx = this.player.x + dir[0];
+        const ty = this.player.y + dir[1];
+        
+        // 檢查目標格是否有蛇
+        const snakes = this.enemyManager.snakes;
+        const isSnakeInFront = snakes.some(s => Math.round(s.x) === tx && Math.round(s.y) === ty);
+        
+        // 檢查是否有牆
+        const cell = this.maze.getCell(this.player.x, this.player.y);
+        const hasWall = cell ? cell.walls[this.player.facing] : true;
+        
+        if (isSnakeInFront && !hasWall) {
+          this.tutorialHints.firstSnakeAttackReady = true;
+          this.ui.showHint("attack");
+          this.ui.flashActionButton();
+          this.saveProgress();
+        }
+      }
     }
 
     // 困死偵測（放燈塔後）
@@ -309,7 +370,7 @@ class Game {
     if (this.player) this.player.destroy();
     
     if (saveCurrent) {
-      Storage.saveGame(this.currentLevel, this.timer.getTotalTime());
+      Storage.saveGame(this.currentLevel, this.timer.getTotalTime(), this.tutorialHints);
     }
     this.ui.checkContinueBtn();
     

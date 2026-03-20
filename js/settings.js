@@ -11,6 +11,7 @@ class Settings {
     this.speed = 0.2; // 中
     this.theme = 'dark'; // 暗色 (預設)
     this.difficulty = 'normal'; // 一般
+    this.language = 'zh'; // 語言 (預設繁中)
 
     this.load();
   }
@@ -23,21 +24,30 @@ class Settings {
         if (data.speed !== undefined) this.speed = data.speed;
         if (data.theme !== undefined) this.theme = data.theme;
         if (data.difficulty !== undefined) this.difficulty = data.difficulty;
+        if (data.language !== undefined) this.language = data.language;
       } catch (e) {
         console.error('讀取設定失敗', e);
       }
     }
     this.applyTheme();
+    this.applyLanguage();
   }
 
   save() {
     const data = {
       speed: this.speed,
       theme: this.theme,
-      difficulty: this.difficulty
+      difficulty: this.difficulty,
+      language: this.language
     };
     localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(data));
     this.applyTheme();
+    this.applyLanguage();
+  }
+
+  // 套用語言到 html 標籤的 lang 屬性
+  applyLanguage() {
+    document.documentElement.lang = this.language === 'zh' ? 'zh-TW' : (this.language === 'ja' ? 'ja' : 'en');
   }
 
   // 套用主題到 body 的 data-theme 屬性

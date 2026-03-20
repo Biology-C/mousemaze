@@ -210,14 +210,33 @@ class EnemyManager {
     // 提示回呼
     this.onSnakeSpawn = null;  // 蛇出現時的回呼
     this.onPlayerEaten = null; // 玩家被吃時的回呼
+    
+    // 首輪緩衝
+    this.bufferTimer = 0;
+  }
+
+  /**
+   * 設置暫時性的緩衝時間，期間蛇不會移動
+   * @param {number} ms 
+   */
+  setTemporaryBuffer(ms) {
+    this.bufferTimer = ms;
   }
 
   /**
    * 每幀更新
    */
   update() {
-    // 生成計時
-    this.spawnTimer += 16; // ~60fps
+    const deltaTime = 16.6; // 假設 60fps
+    
+    // 緩衝計時
+    if (this.bufferTimer > 0) {
+      this.bufferTimer -= deltaTime;
+      return; // 緩衝期間不更新蛇 AI
+    }
+    
+    // 1. 處理蛇生成
+    this.spawnTimer += deltaTime;
     if (this.spawnTimer >= this.spawnInterval) {
       this.spawnTimer = 0;
       this.spawnSnake();

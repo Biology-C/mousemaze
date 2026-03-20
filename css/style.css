@@ -641,8 +641,43 @@ body {
   .action-btn span { font-size: 9px; }
 
   /* 搖桿中心 bottom = 30 + 55 = 85px；按鍵偏移縮小為 r≈90px → dx=78, dy=45，按鍵半徑=26 */
-  .action-btn.drill  { left: calc(50% + 52px); bottom: 104px; }
-  .action-btn.hint   { left: calc(50% - 104px); bottom: 104px; }
   .action-btn.mark   { left: calc(50% + 52px);  bottom: 20px; }
   .action-btn.settings { left: calc(50% - 104px); bottom: 20px; }
+}
+
+/* 教學提示元件 */
+#tutorial-hint {
+  position: fixed;
+  top: 80px; /* 避開 HUD */
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 20px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.85);
+  border: 2px solid var(--title-color);
+  color: #fff;
+  font-family: 'DotGothic16', sans-serif;
+  font-size: 1.1rem;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .3s ease, transform .4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 10000;
+  text-align: center;
+  min-width: 250px;
+}
+
+#tutorial-hint.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(10px);
+}
+
+/* 按鈕閃爍動畫 */
+.flash {
+  animation: actionFlash .25s ease-in-out 4;
+}
+
+@keyframes actionFlash {
+  0%, 100% { transform: scale(1); filter: brightness(1); }
+  50% { transform: scale(1.15); filter: brightness(1.6); }
 }

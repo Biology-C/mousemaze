@@ -3,6 +3,10 @@
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-Live-brightgreen)](https://biology-c.github.io/mousemaze/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+| [繁體中文](README.md) | [English](README_EN.md) | [日本語](README_JP.md) |
+
+---
+
 一個基於瀏覽器、純 JavaScript 開發的像素風迷宮探索遊戲。挑戰您的方向感與反應，利用道具與智慧在迷宮中尋找出口！
 
 **🏠 遊戲網址：[https://biology-c.github.io/mousemaze/](https://biology-c.github.io/mousemaze/)**

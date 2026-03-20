@@ -62,6 +62,7 @@ class UIManager {
       selectSpeed: document.getElementById('setting-speed'),
       selectTheme: document.getElementById('setting-theme'),
       selectDifficulty: document.getElementById('setting-difficulty'),
+      selectLanguage: document.getElementById('setting-lang'),
 
       // 說明相關
       btnHelp: document.getElementById('btn-help'),
@@ -436,6 +437,7 @@ class UIManager {
     this.elements.selectSpeed.value = gameSettings.speed;
     this.elements.selectTheme.value = gameSettings.theme;
     this.elements.selectDifficulty.value = gameSettings.difficulty;
+    this.elements.selectLanguage.value = gameSettings.language; // Added language setting
     this.showMenu('settings');
   }
 
@@ -443,6 +445,7 @@ class UIManager {
     gameSettings.speed = parseFloat(this.elements.selectSpeed.value);
     gameSettings.theme = this.elements.selectTheme.value;
     gameSettings.difficulty = this.elements.selectDifficulty.value;
+    gameSettings.language = this.elements.selectLanguage.value; // Added language setting
     gameSettings.save();
     
     if (this.game.player) {
@@ -591,6 +594,42 @@ class UIManager {
         if (onDismiss) onDismiss();
       }, 800);
     }, duration);
+  }
+
+  /**
+   * 顯示小型的首輪教學提示 (畫面上方，2.2~3秒消失)
+   * @param {string} key 提示文案的鍵名 (beacon, snakeSeen, attack)
+   * @param {number} duration 
+   */
+  showHint(key, duration = 2800) {
+    const el = document.getElementById('tutorial-hint');
+    if (!el) return;
+
+    const currentLang = gameSettings.language || 'zh';
+    const text = this.HINT_TEXTS[currentLang][key] || this.HINT_TEXTS.zh[key];
+
+    el.textContent = text;
+    el.classList.add('show');
+
+    if (this._hintTimer) clearTimeout(this._hintTimer);
+    this._hintTimer = setTimeout(() => {
+      el.classList.remove('show');
+      this._hintTimer = null;
+    }, duration);
+  }
+
+  /**
+   * 閃爍動作按鈕 (Space)
+   */
+  flashActionButton() {
+    // 獲取電腦版與手機版的動作按鈕
+    const mobileBtn = document.getElementById('btn-skill-drill');
+    const hudSkill = document.getElementById('hud-drill'); // HUD 上的鑽牆字樣也可以亮一下
+
+    if (mobileBtn) {
+      mobileBtn.classList.add('flash');
+      setTimeout(() => mobileBtn.classList.remove('flash'), 1200);
+    }
   }
 
   /**

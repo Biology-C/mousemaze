@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+  <div id="tutorial-hint"></div>
   <!-- 遊戲主體 -->
   <div id="game-container">
     <canvas id="game-canvas"></canvas>
@@ -144,6 +145,15 @@
       <div class="panel">
         <h2 class="subtitle">遊戲設定</h2>
         
+        <div class="setting-group">
+          <label>語言 / Language：</label>
+          <select id="setting-lang" class="input-select">
+            <option value="zh">繁體中文</option>
+            <option value="en">English</option>
+            <option value="ja">日本語</option>
+          </select>
+        </div>
+
         <div class="setting-group">
           <label>移動速度：</label>
           <select id="setting-speed" class="input-select">
