@@ -351,6 +351,7 @@ class Game {
     }
 
     // 處理定時合併牆邏輯 (每 3 秒切換)
+    const deltaTime = 16.6; // 假設 60fps
     this.mergingWallTimer += deltaTime;
     if (this.mergingWallTimer >= this.mergingWallInterval) {
       this.mergingWallTimer = 0;
