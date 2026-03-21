@@ -270,6 +270,7 @@ class Player {
           this.targetPixelX = nextX * this.cellSize;
           this.targetPixelY = nextY * this.cellSize;
           this.isMoving = true;
+          if (window.audioManager) window.audioManager.playWalk();
         } else {
           // 不能移動 (撞牆)：播放輕微回彈效果
           this._playBumpAnimation();
@@ -386,6 +387,7 @@ class Player {
       }
       this.drillCount--;
       this._playBumpAnimation();
+      if (window.audioManager) window.audioManager.playDig();
     }
   }
 
@@ -402,9 +404,13 @@ class Player {
     
     // 透過 game 的 enemyManager 檢查蛇
     if (this.enemyManager) {
-      const hit = this.enemyManager.attackAt(targetX, targetY);
+      const result = this.enemyManager.attackAt(targetX, targetY);
+      const hit = typeof result === 'object' ? result.hit : result;
       if (hit) {
         this._playBumpAnimation();
+        if (result && result.killed) {
+          this.drillCount += 3; // 擊敗蛇，增加3次打洞機會
+        }
       }
     }
   }

@@ -17,6 +17,10 @@ window.addEventListener('orientationchange', () => {
 
 window.addEventListener('DOMContentLoaded', () => {
   updateViewportHeight();
+  
+  // 實例化音效管理器
+  window.audioManager = new AudioManager();
+  
   // 實例化遊戲主控台
   window.gameController = new Game();
 });

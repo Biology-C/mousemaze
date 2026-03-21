@@ -19,7 +19,7 @@ class Snake {
 
     // 移動速度控制（格/幀 的計時器）
     this.moveTimer = 0;
-    this.baseMoveInterval = 18; // 基本移動間隔（幀數），越大越慢
+    this.baseMoveInterval = 12; // 基本移動間隔（幀數），減少1/3加速
     this.moveInterval = this.baseMoveInterval;
 
     // 加速機制：每 20 秒加速 2 秒
@@ -146,19 +146,21 @@ class Snake {
 
   /**
    * 受到攻擊（扣 hp）
-   * @returns {boolean} 是否命中
+   * @returns {boolean} 是否擊殺
    */
   takeDamage() {
     this.hp--;
     this.hurtFlash = 15; // 閃爍 15 幀
+    let killed = false;
     if (this.hp <= 0) {
       this.alive = false;
+      killed = true;
     }
     // 被打時縮短蛇身
     if (this.segments.length > 1) {
       this.segments.pop();
     }
-    return true;
+    return killed;
   }
 
   /**
@@ -332,7 +334,7 @@ class EnemyManager {
    * 在指定座標攻擊蛇（身體/尾巴，非頭）
    * @param {number} tx 目標格 X
    * @param {number} ty 目標格 Y
-   * @returns {boolean} 是否命中
+   * @returns {object} { hit: boolean, killed: boolean }
    */
   attackAt(tx, ty) {
     for (const snake of this.snakes) {
@@ -341,12 +343,12 @@ class EnemyManager {
       for (let i = 0; i < snake.segments.length; i++) {
         const seg = snake.segments[i];
         if (seg.x === tx && seg.y === ty) {
-          snake.takeDamage();
-          return true;
+          const killed = snake.takeDamage();
+          return { hit: true, killed };
         }
       }
     }
-    return false;
+    return { hit: false, killed: false };
   }
 
   /**

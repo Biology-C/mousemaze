@@ -17,7 +17,8 @@ A pixel-art maze exploration game built with pure JavaScript and HTML5 Canvas. C
     *   One snake spawns every 60 seconds—don't let it catch you!
     *   Snakes chase Lighthouses first, then the player.
     *   They burst with speed for 2s every 20s.
-    *   Attack snakes with `Space` when facing them; 3 hits to defeat!
+    *   Attack snakes with `Space` when facing them; 3 hits to defeat! (Defeating a snake awards 3 extra drills)
+*   **🎵 Audio System**: Added BGM and sound effects for walking/digging (music plays upon first interaction).
 *   **🔦 Lighthouse Beacons**: Place permanent lighthouses to illuminate fog, but they also block paths. Use them strategically to lure snakes!
 *   **⚡ Smart Action Button**: `Space` drills through walls if facing one, or attacks snakes if the path is clear.
 *   **Gadgets**:
