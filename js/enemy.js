@@ -19,13 +19,13 @@ class Snake {
 
     // 移動速度控制（格/幀 的計時器）
     this.moveTimer = 0;
-    this.baseMoveInterval = 12; // 基本移動間隔（幀數），減少1/3加速
+    this.baseMoveInterval = 60; // 平時：每秒 1 格 (假設 60 fps)
     this.moveInterval = this.baseMoveInterval;
 
-    // 加速機制：每 20 秒加速 2 秒
+    // 加速機制：每 8.5 秒正常，接著 2 秒加速
     this.speedCycleTimer = 0;
     this.isRushing = false;
-    this.rushMoveInterval = 10; // 加速時的移動間隔（更快）
+    this.rushMoveInterval = 20; // 衝刺：每秒 3 格 (60 / 3)
 
     // 上次移動的方向（避免蛇立刻回頭）
     this.lastDir = -1;
@@ -46,11 +46,11 @@ class Snake {
   update(player, breadcrumbs) {
     if (!this.alive) return;
 
-    // 加速週期計時（假設 60fps，每幀約 16ms）
-    this.speedCycleTimer += 16;
-    // 每 20 秒 (20000ms) 加速 2 秒 (2000ms)
-    const cyclePos = this.speedCycleTimer % 22000; // 20s 正常 + 2s 加速
-    if (cyclePos >= 20000) {
+    // 加速週期計時（假設 60fps，每幀約 16.6ms）
+    this.speedCycleTimer += 16.6;
+    // 每 8.5 秒 (8500ms) 正常 + 2 秒 (2000ms) 衝刺，週期 10500ms
+    const cyclePos = this.speedCycleTimer % 10500; 
+    if (cyclePos >= 8500) {
       this.isRushing = true;
       this.moveInterval = this.rushMoveInterval;
     } else {
@@ -212,7 +212,7 @@ class EnemyManager {
 
     // 生成計時器
     this.spawnTimer = 0;
-    this.spawnInterval = 8500; // 8.5 秒生成一隻
+    this.spawnInterval = 45000; // 45 秒生成一隻
 
     // 提示回呼
     this.onSnakeSpawn = null;  // 蛇出現時的回呼
