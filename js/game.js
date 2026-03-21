@@ -16,6 +16,9 @@ class Game {
     this.maxLevel = 18; // 6 教學 + 12 原關卡
     this._cheatActivated = false; // 避免短時間重複送出設定
     
+    // 檢查排行榜每日歸零
+    Storage.checkDailyReset();
+
     // 模組
     // 初始化 UI
     this.ui = new UIManager(this);

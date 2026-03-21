@@ -149,6 +149,28 @@ const Storage = {
 
   loadPlayerName() {
     return localStorage.getItem('maze_last_name') || '';
+  },
+
+  /**
+   * 檢查是否跨越 UTC+8 的 00:00，若是則歸零排行榜
+   */
+  checkDailyReset() {
+    const now = new Date();
+    // 轉換為 UTC 毫秒
+    const utcMs = now.getTime() + (now.getTimezoneOffset() * 60000);
+    // 加上 8 小時得到 UTC+8 的時間
+    const tpeMs = utcMs + (8 * 3600000);
+    const tpeDate = new Date(tpeMs);
+    const todayStr = `${tpeDate.getFullYear()}-${tpeDate.getMonth() + 1}-${tpeDate.getDate()}`;
+
+    const lastReset = localStorage.getItem('maze_last_reset_date');
+    if (lastReset !== todayStr) {
+      // 跨日，清空排行榜
+      localStorage.removeItem(STORAGE_KEY_LEADERBOARD);
+      localStorage.removeItem(STORAGE_KEY_PLAYTIME);
+      localStorage.setItem('maze_last_reset_date', todayStr);
+      console.log('UTC+8 新的一天，已清空本機排行榜。');
+    }
   }
 };
 
