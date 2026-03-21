@@ -274,6 +274,8 @@ class Game {
     this.ui.updateHUD(this.currentLevel, 0);
     this.ui.updateSkillHUD(this.player.drillCount, this.player.hintCount);
 
+    if (window.audioManager) window.audioManager.playBGM();
+
     // 7. 教學關 -> 顯示教學提示
     if (this.isTutorialLevel()) {
       const config = this.tutorialConfig[this.currentLevel];
@@ -533,7 +535,17 @@ class Game {
     const isCheat = this.isGM || this._cheatActivated;
     const isNewRecord = isCheat ? false : Storage.isNewRecord(this.currentLevel, levelMs);
     
-    this.ui.showLevelComplete(this.currentLevel, isNewRecord, levelMs, totalMs, tutorialTitle);
+    // 自動傳送結算結果，不跳出手動輸入框
+    if (isNewRecord) {
+      const name = this.lastPlayerName || 'Hero';
+      this.submitHighScore(name);
+    }
+
+    // 播放勝利音樂
+    if (window.audioManager) window.audioManager.playVictory();
+
+    // 將 isNewRecord 參數傳遞 false 使其不再顯示記錄輸入框
+    this.ui.showLevelComplete(this.currentLevel, false, levelMs, totalMs, tutorialTitle);
   }
 
   /**

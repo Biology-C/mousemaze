@@ -15,6 +15,9 @@ class AudioManager {
     this.digSfx = new Audio('music/Walking_On_Grass_Slow.ogg');
     this.digSfx.volume = 1.0;
 
+    this.victorySfx = new Audio('music/Level_Complete.ogg');
+    this.victorySfx.volume = 1.0;
+
     this.isBGMPlaying = false;
     
     // 為了符合瀏覽器的 Autoplay Policy，綁定第一次點擊或按鍵事件來播放 BGM
@@ -43,6 +46,12 @@ class AudioManager {
     this.bgm.pause();
     this.bgm.currentTime = 0;
     this.isBGMPlaying = false;
+  }
+
+  playVictory() {
+    this.stopBGM();
+    this.victorySfx.currentTime = 0;
+    this.victorySfx.play().catch(err => {});
   }
 
   playWalk() {

@@ -230,6 +230,28 @@ class UIManager {
           (this.game.state === Game.STATE_PLAYING || this.game.state === Game.STATE_PAUSED)) {
         this.game.togglePause();
       }
+      
+      // 全域方向鍵選單操控
+      if (this.game.state !== Game.STATE_PLAYING && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+        const visibleMenu = Object.values(this.menus).find(m => !m.classList.contains('hidden'));
+        if (visibleMenu) {
+          const focusable = Array.from(visibleMenu.querySelectorAll('button:not(.hidden):not([style*="display: none"])'));
+          if (focusable.length > 0) {
+            e.preventDefault();
+            let currentIndex = focusable.indexOf(document.activeElement);
+            if (currentIndex === -1) {
+              focusable[0].focus();
+            } else {
+              if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+                currentIndex = (currentIndex + 1) % focusable.length;
+              } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+                currentIndex = (currentIndex - 1 + focusable.length) % focusable.length;
+              }
+              focusable[currentIndex].focus();
+            }
+          }
+        }
+      }
     });
 
     // 過關選單

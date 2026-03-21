@@ -14,7 +14,7 @@ A pixel-art maze exploration game built with pure JavaScript and HTML5 Canvas. C
 *   **18 Progressive Levels**: Includes 6 tutorial stages covering movement, digging, lighthouses, and enemies.
 *   **Tutorial Title System**: Earn unique titles by completing tutorials (e.g., 🐾 Novice → ⚔️ Hero Mouse).
 *   **🐍 Snake Enemy System**:
-    *   One snake spawns every 60 seconds—don't let it catch you!
+    *   One snake spawns every 8.5 seconds—don't let it catch you!
     *   Snakes chase Lighthouses first, then the player.
     *   They burst with speed for 2s every 20s.
     *   Attack snakes with `Space` when facing them; 3 hits to defeat! (Defeating a snake awards 3 extra drills)

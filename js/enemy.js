@@ -212,7 +212,7 @@ class EnemyManager {
 
     // 生成計時器
     this.spawnTimer = 0;
-    this.spawnInterval = 60000; // 60 秒生成一隻
+    this.spawnInterval = 8500; // 8.5 秒生成一隻
 
     // 提示回呼
     this.onSnakeSpawn = null;  // 蛇出現時的回呼
