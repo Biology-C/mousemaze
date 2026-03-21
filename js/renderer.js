@@ -30,6 +30,7 @@ class Renderer {
   setThemeColors() {
     const isLight = gameSettings.theme === 'light';
     this.colors = {
+      bg: isLight ? '#fdfbf7' : '#000',
       wall: isLight ? '#795548' : '#2a2a35',
       wallHighlight: isLight ? '#a1887f' : '#3b3b4d',
       wallShadow: isLight ? '#4e342e' : '#1a1a24',
@@ -37,7 +38,7 @@ class Renderer {
       floorPattern: isLight ? '#ebe3d5' : '#15151c',
       start: isLight ? '#388e3c' : '#27ae60',
       end: isLight ? '#f57f17' : '#f1c40f',
-      fog: isLight ? 'rgba(245, 240, 230, 1)' : 'rgba(0, 0, 0, 0.95)',
+      fog: isLight ? 'rgba(245, 240, 230, 0.95)' : 'rgba(0, 0, 0, 0.95)',
     };
   }
 
@@ -72,7 +73,7 @@ class Renderer {
 
     this.updateCamera(player);
 
-    this.ctx.fillStyle = '#000';
+    this.ctx.fillStyle = this.colors.bg;
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
     this.ctx.save();

@@ -650,6 +650,11 @@ class UIManager {
     // 立即套用 BGM 開關
     if(window.audioManager) window.audioManager.updateBGMState();
     
+    // 立即套用 Renderer 顏色
+    if (this.game && this.game.renderer) {
+      this.game.renderer.setThemeColors();
+    }
+    
     this.updateUILanguage(); // 套用語言變更
     this.hideMenu('settings');
     
