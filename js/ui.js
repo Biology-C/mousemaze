@@ -13,6 +13,7 @@ class UIManager {
       pause: document.getElementById('menu-pause'),
       levelComplete: document.getElementById('menu-level-complete'),
       leaderboard: document.getElementById('menu-leaderboard-view'),
+      nameInput: document.getElementById('menu-name-input'),
       settings: document.getElementById('menu-settings'),
       help: document.getElementById('menu-help'),
     };
@@ -49,6 +50,11 @@ class UIManager {
       btnContinue: document.getElementById('btn-continue'),
       btnNextLevel: document.getElementById('btn-next-level'),
       
+      // 名字輸入
+      inputNewPlayerName: document.getElementById('input-new-player-name'),
+      btnConfirmName: document.getElementById('btn-confirm-name'),
+      btnCancelName: document.getElementById('btn-cancel-name'),
+
       // 排行榜相關
       lbTableBody: document.getElementById('leaderboard-body'),
       lbLevelDisplay: document.getElementById('lb-level-display'),
@@ -148,7 +154,10 @@ class UIManager {
         msg_trapped: "🧱 這隻老鼠把自己困死了。",
         msg_cheat: "🐭 金手指啟動！無限鑽牆！",
         msg_gm_on: "👑 GM 模式開啟！",
-        msg_gm_off: "GM 模式關閉"
+        msg_gm_off: "GM 模式關閉",
+        enter_name: "輸入冒險者名稱",
+        confirm_start: "確認出發",
+        back: "返回"
       },
       en: {
         level: "Level", time: "Time", dig: "Dig", hint: "Hint",
@@ -188,7 +197,10 @@ class UIManager {
         msg_trapped: "🧱 This mouse trapped itself to death.",
         msg_cheat: "🐭 Cheat activated! Infinite digs!",
         msg_gm_on: "👑 GM Mode ON!",
-        msg_gm_off: "GM Mode OFF"
+        msg_gm_off: "GM Mode OFF",
+        enter_name: "Enter Adventurer Name",
+        confirm_start: "Confirm & Start",
+        back: "Back"
       }
     };
 
@@ -210,7 +222,33 @@ class UIManager {
 
   bindEvents() {
     // 主選單
-    this.elements.btnStart.addEventListener('click', () => this.game.startNewGame());
+    this.elements.btnStart.addEventListener('click', () => {
+      this.showMenu('nameInput');
+      if (this.elements.inputNewPlayerName) {
+        this.elements.inputNewPlayerName.value = this.game.lastPlayerName || 'Hero';
+        setTimeout(() => this.elements.inputNewPlayerName.focus(), 50);
+      }
+    });
+
+    if (this.elements.btnConfirmName) {
+      this.elements.btnConfirmName.addEventListener('click', () => {
+        let name = this.elements.inputNewPlayerName.value.trim() || 'Hero';
+        this.game.lastPlayerName = name;
+        Storage.savePlayerName(name);
+        this.game.startNewGame();
+      });
+    }
+
+    if (this.elements.btnCancelName) {
+      this.elements.btnCancelName.addEventListener('click', () => this.showMenu('main'));
+    }
+
+    if (this.elements.inputNewPlayerName) {
+      this.elements.inputNewPlayerName.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') this.elements.btnConfirmName.click();
+      });
+    }
+
     this.elements.btnContinue.addEventListener('click', () => this.game.continueGame());
     document.getElementById('btn-leaderboard').addEventListener('click', () => this.showLeaderboard(1));
     this.elements.btnSettings.addEventListener('click', () => this.showSettings());
@@ -569,6 +607,16 @@ class UIManager {
       this.elements.btnNextLevel.classList.remove('hidden');
       this.elements.btnNextLevel.textContent = "進入下一關";
     }
+
+    // Auto focus button
+    setTimeout(() => {
+      if (level !== 18 && this.elements.btnNextLevel) {
+        this.elements.btnNextLevel.focus();
+      } else {
+        const btnRest = document.getElementById('btn-rest');
+        if (btnRest) btnRest.focus();
+      }
+    }, 50);
   }
 
   showNameEntry() {}
