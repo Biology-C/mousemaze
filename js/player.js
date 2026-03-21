@@ -325,6 +325,12 @@ class Player {
       if (this.facing !== targetCell.onewayDir) return false;
     }
 
+    // 檢查目標格是否有燈塔（將燈塔視為實體障礙）
+    if (this.itemManager) {
+      const isBeacon = this.itemManager.breadcrumbs.some(b => b.x === tx && b.y === ty);
+      if (isBeacon) return false;
+    }
+
     // [N, E, S, W] = [0, 1, 2, 3] 牆壁存在與否
     if (ty < this.y) return !currCell.walls[0]; // 想往上，如果上方沒牆就能走
     if (tx > this.x) return !currCell.walls[1]; // 想往右，如果右方沒牆就能走
@@ -341,13 +347,25 @@ class Player {
     const currCell = this.maze.getCell(this.x, this.y);
     const wallIdx = this.facing;
     
+    // 檢查面前是否有燈塔
+    let isBeaconAhead = false;
+    if (this.itemManager) {
+      const dir = this.maze.DIRECTIONS[this.facing];
+      const targetX = this.x + dir[0];
+      const targetY = this.y + dir[1];
+      isBeaconAhead = this.itemManager.breadcrumbs.some(b => b.x === targetX && b.y === targetY);
+    }
+    
     if (currCell && currCell.walls[wallIdx]) {
       // 面前有牆 → 鑽牆
       if (this.drillCount > 0) {
         this._useDrill();
       }
+    } else if (isBeaconAhead) {
+      // 面前有燈塔 → 視同無牆進行攻擊判斷
+      this._useAttack();
     } else {
-      // 面前無牆 → 攻擊（不扣鑽牆次數）
+      // 面前無牆無燈塔 → 攻擊（不扣鑽牆次數）
       this._useAttack();
     }
   }
