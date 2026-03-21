@@ -9,7 +9,7 @@ class AudioManager {
     this.bgm.loop = true;
     this.bgm.volume = 0.3; // 30% 音量
 
-    this.walkSfx = new Audio('music/Walk_Alt03.wav');
+    this.walkSfx = new Audio('music/Walk_Alt01.ogg');
     this.walkSfx.volume = 1.0;
 
     this.digSfx = new Audio('music/Walking_On_Grass_Slow.ogg');
