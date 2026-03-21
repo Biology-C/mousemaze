@@ -18,6 +18,12 @@ class AudioManager {
     this.victorySfx = new Audio('music/Level_Complete.ogg');
     this.victorySfx.volume = 1.0;
 
+    this.itemSfx = new Audio('music/Collect_Point.ogg');
+    this.itemSfx.volume = 1.0;
+
+    this.snakeSpawnSfx = new Audio('music/Alarm1.ogg');
+    this.snakeSpawnSfx.volume = 1.0;
+
     this.isBGMPlaying = false;
     
     // 為了符合瀏覽器的 Autoplay Policy，綁定第一次點擊或按鍵事件來播放 BGM
@@ -62,5 +68,15 @@ class AudioManager {
   playDig() {
     this.digSfx.currentTime = 0;
     this.digSfx.play().catch(err => {});
+  }
+
+  playItemPickup() {
+    this.itemSfx.currentTime = 0;
+    this.itemSfx.play().catch(err => {});
+  }
+
+  playSnakeSpawn() {
+    this.snakeSpawnSfx.currentTime = 0;
+    this.snakeSpawnSfx.play().catch(err => {});
   }
 }

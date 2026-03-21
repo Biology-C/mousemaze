@@ -113,6 +113,15 @@ class Snake {
       }
     }
 
+    // 若沒有任何可走方向（死胡同），則允許掉頭
+    if (dirs.length === 0 && this.segments.length > 1) {
+      const backDirIdx = (this.lastDir + 2) % 4;
+      if (!cell.walls[backDirIdx]) {
+        const dir = this.maze.DIRECTIONS[backDirIdx];
+        dirs.push({ dirIdx: backDirIdx, x: hx + dir[0], y: hy + dir[1] });
+      }
+    }
+
     if (dirs.length === 0) return;
 
     // 若有目標，選最近的方向
@@ -324,6 +333,7 @@ class EnemyManager {
     if (valid) {
       const snake = new Snake(x, y, this.maze);
       this.snakes.push(snake);
+      if (window.audioManager) window.audioManager.playSnakeSpawn();
       if (this.onSnakeSpawn) {
         this.onSnakeSpawn();
       }

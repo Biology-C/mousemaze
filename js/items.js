@@ -252,6 +252,9 @@ class ItemManager {
         } else if (item.type === this.TYPES.DRILL_UP) {
           this.player.drillCount += 1;
         }
+        
+        if (window.audioManager) window.audioManager.playItemPickup();
+
         this.items.splice(i, 1);
       }
     }
