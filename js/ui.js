@@ -633,6 +633,8 @@ class UIManager {
     this.elements.selectTheme.value = gameSettings.theme;
     this.elements.selectDifficulty.value = gameSettings.difficulty;
     this.elements.selectLanguage.value = gameSettings.language; // Added language setting
+    if (this.elements.settingBgm) this.elements.settingBgm.checked = gameSettings.bgmEnabled;
+    if (this.elements.settingSfx) this.elements.settingSfx.checked = gameSettings.sfxEnabled;
     this.showMenu('settings');
   }
 
@@ -641,7 +643,13 @@ class UIManager {
     gameSettings.theme = this.elements.selectTheme.value;
     gameSettings.difficulty = this.elements.selectDifficulty.value;
     gameSettings.language = this.elements.selectLanguage.value; // Added language setting
+    if (this.elements.settingBgm) gameSettings.bgmEnabled = this.elements.settingBgm.checked;
+    if (this.elements.settingSfx) gameSettings.sfxEnabled = this.elements.settingSfx.checked;
     gameSettings.save();
+    
+    // 立即套用 BGM 開關
+    if(window.audioManager) window.audioManager.updateBGMState();
+    
     this.updateUILanguage(); // 套用語言變更
     this.hideMenu('settings');
     

@@ -279,7 +279,7 @@ class Game {
     this.ui.updateHUD(this.currentLevel, 0);
     this.ui.updateSkillHUD(this.player.drillCount, this.player.hintCount);
 
-    if (window.audioManager) window.audioManager.playBGM();
+    if (window.audioManager) window.audioManager.changeBGM(this.currentLevel);
 
     // 7. 教學關 -> 顯示教學提示
     if (this.isTutorialLevel()) {

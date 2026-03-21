@@ -12,6 +12,8 @@ class Settings {
     this.theme = 'dark'; // 暗色 (預設)
     this.difficulty = 'normal'; // 一般
     this.language = 'zh'; // 語言 (預設繁中)
+    this.bgmEnabled = true; // 開啟音樂
+    this.sfxEnabled = true; // 開啟音效
 
     this.load();
   }
@@ -25,6 +27,8 @@ class Settings {
         if (data.theme !== undefined) this.theme = data.theme;
         if (data.difficulty !== undefined) this.difficulty = data.difficulty;
         if (data.language !== undefined) this.language = data.language;
+        if (data.bgmEnabled !== undefined) this.bgmEnabled = data.bgmEnabled;
+        if (data.sfxEnabled !== undefined) this.sfxEnabled = data.sfxEnabled;
       } catch (e) {
         console.error('讀取設定失敗', e);
       }
@@ -38,7 +42,9 @@ class Settings {
       speed: this.speed,
       theme: this.theme,
       difficulty: this.difficulty,
-      language: this.language
+      language: this.language,
+      bgmEnabled: this.bgmEnabled,
+      sfxEnabled: this.sfxEnabled
     };
     localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(data));
     this.applyTheme();
