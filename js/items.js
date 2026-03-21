@@ -157,30 +157,8 @@ class ItemManager {
     const exists = this.breadcrumbs.some(b => b.x === x && b.y === y);
     if (exists) return false;
 
-    // 放置燈塔：加入血量與受影響的牆面紀錄
+    // 放置燈塔：僅紀錄血量，不再生成牆壁
     const breadcrumb = { x, y, hp: 3, changedWalls: [] };
-
-    // 牆體化：封閉該格四面牆壁
-    const cell = maze.getCell(x, y);
-    if (cell) {
-      for (let i = 0; i < 4; i++) {
-        if (!cell.walls[i]) {
-          cell.walls[i] = true;
-          breadcrumb.changedWalls.push({ cx: x, cy: y, wallIdx: i });
-          
-          // 同步封閉鄰居的對面牆
-          const dir = maze.DIRECTIONS[i];
-          const nx = x + dir[0];
-          const ny = y + dir[1];
-          const neighbor = maze.getCell(nx, ny);
-          if (neighbor) {
-            const oppIdx = (i + 2) % 4;
-            neighbor.walls[oppIdx] = true;
-            breadcrumb.changedWalls.push({ cx: nx, cy: ny, wallIdx: oppIdx });
-          }
-        }
-      }
-    }
     this.breadcrumbs.push(breadcrumb);
 
     // 觸發首輪引導提示
@@ -199,16 +177,6 @@ class ItemManager {
    */
   removeBreadcrumb(index) {
     if (index < 0 || index >= this.breadcrumbs.length) return;
-    const b = this.breadcrumbs[index];
-    
-    // 恢復受影響的牆壁為不封閉 (false)
-    if (b.changedWalls) {
-      b.changedWalls.forEach(cw => {
-        const cell = this.maze.getCell(cw.cx, cw.cy);
-        if (cell) cell.walls[cw.wallIdx] = false;
-      });
-    }
-    
     // 從陣列移除
     this.breadcrumbs.splice(index, 1);
   }

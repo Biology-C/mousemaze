@@ -19,13 +19,13 @@ class Snake {
 
     // 移動速度控制（格/幀 的計時器）
     this.moveTimer = 0;
-    this.baseMoveInterval = 60; // 平時：每秒 1 格 (假設 60 fps)
+    this.baseMoveInterval = 180; // 平時：每 3 秒 1 格 (假設 60 fps 180)
     this.moveInterval = this.baseMoveInterval;
 
     // 加速機制：每 8.5 秒正常，接著 2 秒加速
     this.speedCycleTimer = 0;
     this.isRushing = false;
-    this.rushMoveInterval = 20; // 衝刺：每秒 3 格 (60 / 3)
+    this.rushMoveInterval = 60; // 衝刺：每秒 1 格
 
     // 上次移動的方向（避免蛇立刻回頭）
     this.lastDir = -1;
@@ -270,7 +270,7 @@ class EnemyManager {
         for (let bIdx = 0; bIdx < breadcrumbs.length; bIdx++) {
           const b = breadcrumbs[bIdx];
           const dist = Math.abs(b.x - hx) + Math.abs(b.y - hy);
-          if (dist === 1) { // 燈塔在相鄰格子
+          if (dist <= 1) { // 燈塔在同格或相鄰格子
             // 由於 update 約每 16ms 呼叫一次，這裡假設 snake.attackCooldown 控制 1 秒攻速
             if (!snake.attackCooldown || snake.attackCooldown <= 0) {
               b.hp -= 1;
