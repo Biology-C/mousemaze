@@ -14,8 +14,10 @@ class Game {
     this.state = Game.STATE_MENU;
     this.currentLevel = 1;
     this.maxLevel = 18; // 6 教學 + 12 原關卡
+    this._cheatActivated = false; // 避免短時間重複送出設定
     
     // 模組
+    // 初始化 UI
     this.ui = new UIManager(this);
     this.renderer = new Renderer('game-canvas');
     this.timer = new GameTimer(); // Keep GameTimer for now, as the snippet's Timer might be a future change or typo.
