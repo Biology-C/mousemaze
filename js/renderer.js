@@ -101,6 +101,10 @@ class Renderer {
           floorColor = '#fcf3cf'; // 淺黃寶箱底
         } else if (cell.type === 'exit_shift') {
           floorColor = '#e8daef'; // 淺紫出口轉換底
+        } else if (cell.type === 'speedup') {
+          floorColor = '#d5f5e3'; // 淺綠加速地磚
+        } else if (cell.type === 'slowdown') {
+          floorColor = '#f5b7b1'; // 淺紅緩速地磚
         }
 
         this.ctx.fillStyle = floorColor;
@@ -117,6 +121,10 @@ class Renderer {
           this._drawChanceChest(cx, cy);
         } else if (cell.type === 'exit_shift') {
           this._drawExitShiftIcon(cx, cy);
+        } else if (cell.type === 'speedup') {
+          this._drawSpeedupIcon(cx, cy);
+        } else if (cell.type === 'slowdown') {
+          this._drawSlowdownIcon(cx, cy);
         }
       }
     }
@@ -481,6 +489,42 @@ class Renderer {
     this.ctx.textAlign = 'center';
     this.ctx.textBaseline = 'middle';
     this.ctx.fillText('!', cx, cy + s * 0.1); 
+  }
+
+  _drawSpeedupIcon(cx, cy) {
+    const s = this.cellSize * 0.25;
+    this.ctx.save();
+    this.ctx.translate(cx, cy);
+    this.ctx.fillStyle = '#27ae60'; // 綠色前進雙箭頭
+    for(let i=-1; i<=1; i+=2) {
+      this.ctx.beginPath();
+      this.ctx.moveTo(-s, i*s*0.8 + s*0.5);
+      this.ctx.lineTo(0, i*s*0.8 - s*0.5);
+      this.ctx.lineTo(s, i*s*0.8 + s*0.5);
+      this.ctx.lineTo(s*0.6, i*s*0.8 + s*0.5);
+      this.ctx.lineTo(0, i*s*0.8 - s*0.1);
+      this.ctx.lineTo(-s*0.6, i*s*0.8 + s*0.5);
+      this.ctx.fill();
+    }
+    this.ctx.restore();
+  }
+
+  _drawSlowdownIcon(cx, cy) {
+    const s = this.cellSize * 0.25;
+    this.ctx.save();
+    this.ctx.translate(cx, cy);
+    this.ctx.fillStyle = '#c0392b'; // 紅色減速雙箭頭
+    for(let i=-1; i<=1; i+=2) {
+      this.ctx.beginPath();
+      this.ctx.moveTo(-s, i*s*0.8 - s*0.5);
+      this.ctx.lineTo(0, i*s*0.8 + s*0.5);
+      this.ctx.lineTo(s, i*s*0.8 - s*0.5);
+      this.ctx.lineTo(s*0.6, i*s*0.8 - s*0.5);
+      this.ctx.lineTo(0, i*s*0.8 + s*0.1);
+      this.ctx.lineTo(-s*0.6, i*s*0.8 - s*0.5);
+      this.ctx.fill();
+    }
+    this.ctx.restore();
   }
 
   destroy() {

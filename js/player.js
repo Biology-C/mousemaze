@@ -39,11 +39,12 @@ class Player {
     this.animationTimer = 0;
     
     // 碰撞回彈動畫
-    this.bumpOffset = { x: 0, y: 0 };
-    this.isBumping = false;
-    
     // 傳送動畫狀態
     this.isTeleporting = false;
+    
+    // 地磚速度影響
+    this.speedModifier = 1.0;
+    this.speedModifierTimer = 0;
     
     // 技能與道具狀態 (持久化)
     this.drillCount = this._initializeDrillCount(); // 每關鑽洞次數（依難度）
@@ -178,14 +179,24 @@ class Player {
    * 遊戲迴圈更新邏輯
    */
   update() {
+    // 處理地磚速度影響計時
+    if (this.speedModifierTimer > 0) {
+      this.speedModifierTimer -= 16.6;
+      if (this.speedModifierTimer <= 0) {
+        this.speedModifierTimer = 0;
+        this.speedModifier = 1.0;
+      }
+    }
+
     // 1. 處理平滑移動到目標格子
     if (this.isMoving) {
+      const currentSpeed = this.speed * this.speedModifier;
       const dx = this.targetPixelX - this.pixelX;
       const dy = this.targetPixelY - this.pixelY;
       
       // 平滑插值
-      this.pixelX += dx * this.speed;
-      this.pixelY += dy * this.speed;
+      this.pixelX += dx * currentSpeed;
+      this.pixelY += dy * currentSpeed;
       
       // 更新動畫幀
       this.animationTimer++;
@@ -210,6 +221,18 @@ class Player {
         if (this.hintPath.length > 0) {
            const newPath = this.maze.findPath(this.x, this.y, this.maze.end.x, this.maze.end.y);
            this.hintPath = newPath.length > 0 ? newPath.slice(0, 30) : [];
+        }
+
+        // 抵達新格子，檢查是否有加速/緩速地磚
+        const cell = this.maze.getCell(this.x, this.y);
+        if (cell) {
+          if (cell.type === 'speedup') {
+            this.speedModifier = 1.5;
+            this.speedModifierTimer = 2000;
+          } else if (cell.type === 'slowdown') {
+            this.speedModifier = 0.5;
+            this.speedModifierTimer = 2000;
+          }
         }
       }
     } 

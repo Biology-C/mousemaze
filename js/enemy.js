@@ -35,6 +35,10 @@ class Snake {
     
     // 受傷硬直
     this.stunTimer = 0;
+
+    // 地磚速度影響
+    this.speedModifier = 1.0;
+    this.speedModifierTimer = 0;
   }
 
   get head() {
@@ -72,8 +76,18 @@ class Snake {
     // 受傷閃爍衰減
     if (this.hurtFlash > 0) this.hurtFlash--;
 
-    // 移動計時
-    this.moveTimer++;
+    // 處理地磚速度影響計時
+    if (this.speedModifierTimer > 0) {
+      this.speedModifierTimer -= 16.6;
+      if (this.speedModifierTimer <= 0) {
+        this.speedModifierTimer = 0;
+        this.speedModifier = 1.0;
+      }
+    }
+
+    // 決定移動計時步長
+    let moveStep = this.speedModifier;
+    this.moveTimer += moveStep;
     if (this.moveTimer < this.moveInterval) return;
     this.moveTimer = 0;
 
@@ -162,6 +176,18 @@ class Snake {
       this.segments.pop();
     }
     this.lastDir = best.dirIdx;
+
+    // 檢查新格子的地磚效果
+    const targetCell = this.maze.getCell(best.x, best.y);
+    if (targetCell) {
+      if (targetCell.type === 'speedup') {
+        this.speedModifier = 1.5;
+        this.speedModifierTimer = 2000;
+      } else if (targetCell.type === 'slowdown') {
+        this.speedModifier = 0.5;
+        this.speedModifierTimer = 2000;
+      }
+    }
   }
 
   /**

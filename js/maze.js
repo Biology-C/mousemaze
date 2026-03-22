@@ -11,7 +11,9 @@ const TILE = {
   INVERSE: 'inverse',     // 反方向地磚
   ONEWAY: 'oneway',       // 單行道地磚
   CHANCE: 'chance',       // 機會寶箱
-  EXIT_SHIFT: 'exit_shift' // 出口轉換地磚
+  EXIT_SHIFT: 'exit_shift', // 出口轉換地磚
+  SPEEDUP: 'speedup',     // 加速地磚
+  SLOWDOWN: 'slowdown'    // 緩速地磚
 };
 
 class Maze {
@@ -162,10 +164,19 @@ class Maze {
 
     // --- 第 10 關起 ---
     if (level >= 10) {
-      // 反方向地磚 — 至少 15 格接起來
-      this._placeInverseStrip(avoidSet);
-      // 單行道 — 選一條過道設為單行道
-      this._placeOnewayStrip(avoidSet);
+      // 反方向地磚 — 散佈
+      this._placeInverseScattered(avoidSet);
+      // 單行道 — 散佈
+      this._placeOnewayScattered(avoidSet);
+    }
+
+    // --- 加速/緩速地磚 (第8關起) ---
+    if (level >= 8) {
+      const numSpeedup = 2 + Math.floor(Math.random() * 4);
+      for (let i = 0; i < numSpeedup; i++) this._placeTileRandom(TILE.SPEEDUP, avoidSet);
+
+      const numSlowdown = 2 + Math.floor(Math.random() * 4);
+      for (let i = 0; i < numSlowdown; i++) this._placeTileRandom(TILE.SLOWDOWN, avoidSet);
     }
   }
 
@@ -209,45 +220,23 @@ class Maze {
     }
   }
 
-  /** 放置一條連續反向地磚（至少 15 格） */
-  _placeInverseStrip(avoidSet) {
-    const len = 15 + Math.floor(Math.random() * 5);
-    const dirIdx = Math.random() < 0.5 ? 1 : 2; // 水平或垂直
-    const [dx, dy] = this.DIRECTIONS[dirIdx];
-    // 隨機起點
-    let sx = Math.floor(Math.random() * this.width);
-    let sy = Math.floor(Math.random() * this.height);
-    let placed = 0;
-    let cx = sx, cy = sy;
-    for (let i = 0; i < len + 50 && placed < len; i++) {
-      if (cx < 0 || cy < 0 || cx >= this.width || cy >= this.height) break;
-      if (!this._isAvoid(cx, cy, avoidSet)) {
-        this.grid[cx][cy].type = TILE.INVERSE;
-        avoidSet.add(`${cx},${cy}`);
-        placed++;
-      }
-      cx += dx; cy += dy;
+  /** 放置反向地磚（散佈） */
+  _placeInverseScattered(avoidSet) {
+    const num = 15 + Math.floor(Math.random() * 5);
+    for (let i = 0; i < num; i++) {
+        this._placeTileRandom(TILE.INVERSE, avoidSet);
     }
   }
 
-  /** 放置一條單行道，方向隨機選 */
-  _placeOnewayStrip(avoidSet) {
-    const len = 5 + Math.floor(Math.random() * 5);
-    const dirIdx = Math.floor(Math.random() * 4);
-    const [dx, dy] = this.DIRECTIONS[dirIdx];
-    let sx = Math.floor(Math.random() * this.width);
-    let sy = Math.floor(Math.random() * this.height);
-    let placed = 0;
-    let cx = sx, cy = sy;
-    for (let i = 0; i < len + 50 && placed < len; i++) {
-      if (cx < 0 || cy < 0 || cx >= this.width || cy >= this.height) break;
-      if (!this._isAvoid(cx, cy, avoidSet)) {
-        this.grid[cx][cy].type = TILE.ONEWAY;
-        this.grid[cx][cy].onewayDir = dirIdx;
-        avoidSet.add(`${cx},${cy}`);
-        placed++;
-      }
-      cx += dx; cy += dy;
+  /** 放置單行道（散佈） */
+  _placeOnewayScattered(avoidSet) {
+    const num = 10 + Math.floor(Math.random() * 5);
+    for (let i = 0; i < num; i++) {
+       const cell = this._placeTileRandom(TILE.ONEWAY, avoidSet);
+       if (cell) {
+          const dirIdx = Math.floor(Math.random() * 4);
+          this.grid[cell.x][cell.y].onewayDir = dirIdx;
+       }
     }
   }
 
