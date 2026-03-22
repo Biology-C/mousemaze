@@ -39,6 +39,9 @@ class Player {
     this.animationTimer = 0;
     
     // 碰撞回彈動畫
+    this.bumpOffset = { x: 0, y: 0 };
+    this.isBumping = false;
+
     // 傳送動畫狀態
     this.isTeleporting = false;
     
