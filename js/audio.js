@@ -29,6 +29,10 @@ class AudioManager {
     this.itemSfx = new Audio('music/Collect_Point.ogg');
     this.itemSfx.volume = 0.3;
 
+    // 若 music/Hit.ogg 不存在，瀏覽器會報錯但不會影響遊戲執行
+    this.hitSfx = new Audio('music/Hit.ogg'); 
+    this.hitSfx.volume = 0.3;
+
     this.snakeSpawnSfx = new Audio('music/Alarm1.ogg');
     this.snakeSpawnSfx.volume = 0.3;
 
@@ -105,6 +109,12 @@ class AudioManager {
     if (!gameSettings.sfxEnabled) return;
     this.itemSfx.currentTime = 0;
     this.itemSfx.play().catch(err => {});
+  }
+
+  playHit() {
+    if (!gameSettings.sfxEnabled) return;
+    this.hitSfx.currentTime = 0;
+    this.hitSfx.play().catch(err => {});
   }
 
   playSnakeSpawn() {

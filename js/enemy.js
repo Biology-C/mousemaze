@@ -32,6 +32,9 @@ class Snake {
 
     // 受傷閃爍
     this.hurtFlash = 0;
+    
+    // 受傷硬直
+    this.stunTimer = 0;
   }
 
   get head() {
@@ -45,6 +48,14 @@ class Snake {
    */
   update(player, breadcrumbs) {
     if (!this.alive) return;
+
+    // 受傷硬直狀態，不進行移動尋路
+    if (this.stunTimer > 0) {
+      this.stunTimer--;
+      // 受傷閃爍衰減 (維持在硬直期間閃爍)
+      if (this.hurtFlash > 0) this.hurtFlash--;
+      return;
+    }
 
     // 加速週期計時（假設 60fps，每幀約 16.6ms）
     this.speedCycleTimer += 16.6;
@@ -159,7 +170,8 @@ class Snake {
    */
   takeDamage() {
     this.hp--;
-    this.hurtFlash = 15; // 閃爍 15 幀
+    this.hurtFlash = 30; // 閃爍 30 幀 (0.5秒)
+    this.stunTimer = 30; // 硬直 30 幀 (0.5秒)
     let killed = false;
     if (this.hp <= 0) {
       this.alive = false;

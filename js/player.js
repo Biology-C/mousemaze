@@ -58,6 +58,7 @@ class Player {
     this.hintTimer = 0;
     this.hintStartX = -1; // 發動提示時的位置（固定起點）
     this.hintStartY = -1;
+    this.hintReduceTimer = 0; // 用於提示線逐格縮減的計時
     
     // 按鍵狀態紀錄
     this.keys = {
@@ -162,6 +163,7 @@ class Player {
         this.hintPath = fullPath.slice(0, this.hintRange);
         // 持續 30 秒
         this.hintTimer = 30000;
+        this.hintReduceTimer = 0;
       }
     }
   }
@@ -220,19 +222,31 @@ class Player {
       }
     }
     
-    // 處理提示路徑計時
+    // 處理提示路徑計時與消失動畫 (每秒 0.5 格 = 每 2 秒 1 格)
     if (this.hintPath.length > 0) {
       this.hintTimer -= 16;
       if (this.hintTimer <= 0) {
         this.hintPath = [];
       } else {
-        // 動態重新計算以確保路徑是基於當前位置 (只在到達新格子時才更新，或者單純固定前 30 格。為了讓導航隨機動態，此處可以選擇更新)
-        // 為了簡單，我們可以直接不更新路徑格，只等 30 秒過期。但如果要「從玩家到終點持」，應該每次移動到新格子就刷新：
+        this.hintReduceTimer += 16;
+        if (this.hintReduceTimer >= 2000) {
+          this.hintReduceTimer -= 2000; // 重置減去 2 秒
+          if (this.hintPath.length > 0) {
+            const removedNode = this.hintPath.shift();
+            // 更新起點到剛消去的點，使路線視覺上從起點順移
+            this.hintStartX = removedNode.x;
+            this.hintStartY = removedNode.y;
+          }
+        }
       }
     }
     
     // 2. 如果沒在移動，且沒有在播放碰撞回彈，才接受新指令
     if (!this.isMoving && !this.isBumping) {
+      // 抵達終點後不再接受任何移動或動作指令，使其穩定停在終點以觸發過關
+      if (this.x === this.maze.end.x && this.y === this.maze.end.y) {
+        return;
+      }
       let nextX = this.x;
       let nextY = this.y;
       
@@ -426,6 +440,7 @@ class Player {
       const hit = typeof result === 'object' ? result.hit : result;
       if (hit) {
         this._playBumpAnimation();
+        if (window.audioManager) window.audioManager.playHit();
         if (result && result.killed) {
           this.drillCount += 3; // 擊敗蛇，增加3次打洞機會
         }
@@ -439,6 +454,11 @@ class Player {
   triggerMushroomEffect() {
     this.hasMagicVision = true;
     this.visionTimer = 10000; // 10秒
+    // 增加提示距離與次數
+    this.hintRange += 5; // 增加 5 格的預視距離
+    this.hintCount += 1;
+    // 更新 UI 面板
+    if (this.onStatsChanged) this.onStatsChanged();
   }
 
   /**
