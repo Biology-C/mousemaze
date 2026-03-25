@@ -690,14 +690,14 @@ body {
      搖桿：左側 120×120px
      按鈕：右側橫列 64px 圓鐲，中間间距 10px  */
 
-  /* 搖桿區：左即 16px，底部 0（進入 control-bar 內部對齊） */
+  /* 搖桿區：水平置中，適合左右慣用手 */
   #joystick-zone {
     position: fixed;
-    left: 20px;
+    left: 50%;
+    transform: translateX(-50%);
     bottom: 10px;
     width: 120px;
     height: 120px;
-    transform: none;
   }
 
   /* 按鈕共用樣式：固定下方橫排 */
