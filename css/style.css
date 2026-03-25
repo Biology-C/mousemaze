@@ -451,11 +451,11 @@ body {
   }
 }
 
-/* 類比搖桿 — 畫面正中央 */
+/* 類比搖桿 — 下半部置中 */
 #joystick-zone {
   position: absolute;
   left: 50%;
-  top: 50%;
+  top: 72%;
   transform: translate(-50%, -50%);
   width: 140px;
   height: 140px;
@@ -690,11 +690,11 @@ body {
      搖桿：左側 120×120px
      按鈕：右側橫列 64px 圓鐲，中間间距 10px  */
 
-  /* 搖桿區：畫面正中央，適合左右慣用手 */
+  /* 搖桿區：下半部置中，適合左右慣用手且不擋畫面 */
   #joystick-zone {
     position: fixed;
     left: 50%;
-    top: 50%;
+    top: 72%;
     transform: translate(-50%, -50%);
     width: 120px;
     height: 120px;
