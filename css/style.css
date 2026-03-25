@@ -233,6 +233,60 @@ body {
   pointer-events: auto; /* 恢復按鈕的點擊 */
 }
 
+/* HUD 技能圖示計數（icon + dot 格子）*/
+.hud-icons {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.hud-icon-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background-color: rgba(0, 0, 0, 0.7);
+  padding: 6px 12px;
+  border: 2px solid var(--panel-border);
+  border-radius: 4px;
+}
+
+.hud-icon-label {
+  font-size: 1.4rem;
+  min-width: 1.6rem;
+}
+
+.hud-dot-track {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  max-width: 160px;
+}
+
+.hud-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 2px solid rgba(255,255,255,0.4);
+  background: rgba(255,255,255,0.15);
+  transition: background 0.2s;
+}
+
+.hud-dot.filled-drill { background: #e74c3c; border-color: #ff7675; }
+.hud-dot.filled-hint  { background: #f1c40f; border-color: #ffeaa7; }
+
+/* 無限符號顯示 */
+.hud-infinity {
+  font-size: 1.6rem;
+  color: #f1c40f;
+  line-height: 1;
+}
+
+@media (max-width: 768px) {
+  .hud-icon-label { font-size: 1.2rem; }
+  .hud-dot { width: 12px; height: 12px; }
+  .hud-dot-track { max-width: 120px; }
+}
+
 /* GM HUD */
 #gm-hud {
   position: absolute;
@@ -631,36 +685,31 @@ body {
     margin-bottom: 8px;
   }
 
-  /* 搖桿縮小 (手機螢幕空間有限) */
+  /* 搖桿放大至 160px（對 6 歲兒童更易操作）*/
   #joystick-zone {
-    bottom: 30px;
-    width: 110px;
-    height: 110px;
-  }
-  
-  #joystick-base {
-    width: 110px;
-    height: 110px;
+    bottom: 28px;
+    width: 160px;
+    height: 160px;
   }
 
-  #joystick-knob {
-    width: 44px;
-    height: 44px;
-    top: 33px;
-    left: 33px;
-  }
-
-  /* 時鐘功能鍵縮小，搖桿中心在 bottom: 65px (10+55) */
+  /* 時鐘功能鍵放大至 72px
+     搖桿中心 bottom = 28 + 80 = 108px
+     按鍵半徑 36px；偏移 r≈115px → dx=100, dy=58
+     2點 (drill): left = 50% + (100-36) = 50%+64px, bottom = 108+58-36 = 130px
+    10點 (hint):  left = 50% - (100+36) = 50%-136px, bottom = 130px
+     4點 (mark):  left = 50%+64px, bottom = 108-58-36 = 14px
+     8點 (settings): left = 50%-136px, bottom = 14px  */
   .action-btn {
-    width: 52px;
-    height: 52px;
-    font-size: 18px;
+    width: 72px;
+    height: 72px;
+    font-size: 26px;
   }
-  .action-btn span { font-size: 9px; }
+  .action-btn span { font-size: 10px; }
 
-  /* 搖桿中心 bottom = 30 + 55 = 85px；按鍵偏移縮小為 r≈90px → dx=78, dy=45，按鍵半徑=26 */
-  .action-btn.mark   { left: calc(50% + 52px);  bottom: 20px; }
-  .action-btn.settings { left: calc(50% - 104px); bottom: 20px; }
+  .action-btn.drill    { left: calc(50% + 64px);  bottom: 130px; }
+  .action-btn.hint     { left: calc(50% - 136px); bottom: 130px; }
+  .action-btn.mark     { left: calc(50% + 64px);  bottom: 14px; }
+  .action-btn.settings { left: calc(50% - 136px); bottom: 14px; }
 }
 
 /* 教學提示元件 */

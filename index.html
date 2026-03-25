@@ -19,7 +19,17 @@
     <div id="hud" class="hidden">
       <div class="hud-item"><span data-i18n="level">關卡</span>: <span id="hud-level">1</span>/18</div>
       <div class="hud-item"><span data-i18n="time">時間</span>: <span id="hud-time">00:00.000</span></div>
-      <div class="hud-item" id="hud-skill"><span data-i18n="dig">打洞</span>:<span id="hud-drill">15</span> <span data-i18n="hint">提示</span>:<span id="hud-hint">5</span></div>
+      <!-- 技能計數：圖示 + 格子 -->
+      <div class="hud-icons" id="hud-skill">
+        <div class="hud-icon-row">
+          <span class="hud-icon-label">⚡</span>
+          <div class="hud-dot-track" id="hud-drill-track"></div>
+        </div>
+        <div class="hud-icon-row">
+          <span class="hud-icon-label">💡</span>
+          <div class="hud-dot-track" id="hud-hint-track"></div>
+        </div>
+      </div>
       <button id="btn-pause" class="btn-small"><span data-i18n="pause">暫停</span> (ESC)</button>
     </div>
 
@@ -44,8 +54,8 @@
       <!-- 圍繞搖桿的功能鍵 -->
       <button id="btn-skill-drill" class="action-btn drill" title="打洞/攻擊">⚡<br><span data-i18n="action">動作</span></button>
       <button id="btn-skill-hint" class="action-btn hint" title="提示">💡<br><span data-i18n="hint">提示</span></button>
-      <button id="btn-skill-mark" class="action-btn mark" title="燈塔">🔦<br><span data-i18n="beacon">燈塔</span></button>
-      <button id="btn-skill-settings" class="action-btn settings" title="設定">⚙️<br><span data-i18n="settings">設定</span></button>
+      <!-- 燈塔：第6關後才顯示 (由 JS 控制) -->
+      <button id="btn-skill-mark" class="action-btn mark hidden" title="燈塔">🔦<br><span data-i18n="beacon">燈塔</span></button>
     </div>
 
     <!-- 主選單 -->

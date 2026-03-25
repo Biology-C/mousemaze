@@ -23,8 +23,8 @@ class UIManager {
       container: document.getElementById('hud'),
       level: document.getElementById('hud-level'),
       time: document.getElementById('hud-time'),
-      drill: document.getElementById('hud-drill'),
-      hint: document.getElementById('hud-hint'),
+      drillTrack: document.getElementById('hud-drill-track'),
+      hintTrack: document.getElementById('hud-hint-track'),
       btnPause: document.getElementById('btn-pause')
     };
 
@@ -213,6 +213,15 @@ class UIManager {
       if (this.game.state === Game.STATE_PLAYING && window.innerWidth <= 768 && window.innerHeight > window.innerWidth) {
         this.elements.mobileControls.classList.add('active');
         this.elements.mobileControls.classList.remove('hidden');
+        // 燈塔按鈕：第 6 關（含）以後才顯示
+        const isBeaconLevel = this.game.currentLevel >= 6;
+        if (this.elements.btnSkillMark) {
+          if (isBeaconLevel) {
+            this.elements.btnSkillMark.classList.remove('hidden');
+          } else {
+            this.elements.btnSkillMark.classList.add('hidden');
+          }
+        }
       } else {
         this.elements.mobileControls.classList.remove('active');
         this.elements.mobileControls.classList.add('hidden');
@@ -337,15 +346,6 @@ class UIManager {
     this.bindVirtualKey(this.elements.btnSkillDrill, ' ');
     this.bindVirtualKey(this.elements.btnSkillHint, 'z');
     this.bindVirtualKey(this.elements.btnSkillMark, 'q');
-    
-    // 手機版設定鍵
-    if (this.elements.btnSkillSettings) {
-      this.elements.btnSkillSettings.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        this.showSettings();
-      }, { passive: false });
-      this.elements.btnSkillSettings.addEventListener('mousedown', () => this.showSettings());
-    }
 
     // 監聽 GM 跳關輸入
     if (this.elements.gmJumpLevel) {
@@ -378,10 +378,10 @@ class UIManager {
     const knob = this.elements.joystickKnob;
     if (!zone || !base || !knob) return;
 
-    const baseRadius = 70;
-    const knobRadius = 28;
+    const baseRadius = 80;  // 160px 搖桿 half
+    const knobRadius = 32;  // knob 半徑 (~40% 的 80px)
     const maxDist = baseRadius - knobRadius;
-    const deadZone = 15;
+    const deadZone = 18;
 
     const getBaseCenter = () => {
       const rect = base.getBoundingClientRect();
@@ -424,8 +424,8 @@ class UIManager {
     const handleEnd = () => {
       this._joystickActive = false;
       this._joystickTouchId = null;
-      knob.style.left = '42px';
-      knob.style.top = '42px';
+      knob.style.left = (baseRadius - knobRadius) + 'px';
+      knob.style.top = (baseRadius - knobRadius) + 'px';
       this._releaseJoystickDir();
     };
 
@@ -533,11 +533,39 @@ class UIManager {
   }
 
   updateSkillHUD(drillCount, hintCount) {
-    if (this.hud.drill) {
-      this.hud.drill.textContent = drillCount === Infinity ? '∞' : drillCount;
+    this._renderDotTrack(this.hud.drillTrack, drillCount, 'filled-drill', 21);
+    this._renderDotTrack(this.hud.hintTrack, hintCount, 'filled-hint', 10);
+  }
+
+  /**
+   * 渲染格子型 HUD 計數軌道
+   * @param {HTMLElement} track - dot-track 容器
+   * @param {number} count - 剩餘次數（∞ 時顯示符號）
+   * @param {string} filledClass - 已填充格子的 CSS class
+   * @param {number} maxDots - 最大格子數上限（防止太多格子）
+   */
+  _renderDotTrack(track, count, filledClass, maxDots) {
+    if (!track) return;
+    track.innerHTML = '';
+    if (count === Infinity) {
+      const inf = document.createElement('span');
+      inf.className = 'hud-infinity';
+      inf.textContent = '∞';
+      track.appendChild(inf);
+      return;
     }
-    if (this.hud.hint) {
-      this.hud.hint.textContent = hintCount === Infinity ? '∞' : hintCount;
+    const dots = Math.min(count, maxDots);
+    for (let i = 0; i < dots; i++) {
+      const dot = document.createElement('div');
+      dot.className = `hud-dot ${filledClass}`;
+      track.appendChild(dot);
+    }
+    // 若次數超過上限，顯示 +N
+    if (count > maxDots) {
+      const extra = document.createElement('span');
+      extra.style.cssText = 'font-size:0.9rem;color:#fff;margin-left:4px;';
+      extra.textContent = `+${count - maxDots}`;
+      track.appendChild(extra);
     }
   }
 
