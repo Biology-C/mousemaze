@@ -311,7 +311,6 @@ class Player {
           this.targetPixelY = nextY * this.cellSize;
           this.isMoving = true;
           if (window.audioManager) window.audioManager.playWalk();
-          haptic('move');
         } else {
           // 不能移動 (撞牆)：播放輕微回彈效果
           haptic('bump');
