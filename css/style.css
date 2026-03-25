@@ -455,7 +455,7 @@ body {
 #joystick-zone {
   position: absolute;
   left: 50%;
-  top: 72%;
+  top: 80%;
   transform: translate(-50%, -50%);
   width: 140px;
   height: 140px;
@@ -694,7 +694,7 @@ body {
   #joystick-zone {
     position: fixed;
     left: 50%;
-    top: 72%;
+    top: 80%;
     transform: translate(-50%, -50%);
     width: 120px;
     height: 120px;
