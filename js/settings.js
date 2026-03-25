@@ -30,6 +30,7 @@ class Settings {
         if (data.language !== undefined) this.language = data.language;
         if (data.bgmEnabled !== undefined) this.bgmEnabled = data.bgmEnabled;
         if (data.sfxEnabled !== undefined) this.sfxEnabled = data.sfxEnabled;
+        if (data.showMs !== undefined) this.showMs = data.showMs;
       } catch (e) {
         console.error('讀取設定失敗', e);
       }
@@ -45,7 +46,8 @@ class Settings {
       difficulty: this.difficulty,
       language: this.language,
       bgmEnabled: this.bgmEnabled,
-      sfxEnabled: this.sfxEnabled
+      sfxEnabled: this.sfxEnabled,
+      showMs: this.showMs
     };
     localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(data));
     this.applyTheme();

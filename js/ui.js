@@ -87,6 +87,9 @@ class UIManager {
       recordEntry: document.getElementById('record-entry'),
       inputName: document.getElementById('input-player-name'),
       gmJumpLevel: document.getElementById('gm-jump-level'), // Ensure this is bound
+      settingBgm: document.getElementById('setting-bgm'),
+      settingSfx: document.getElementById('setting-sfx'),
+      settingShowMs: document.getElementById('setting-show-ms'),
     };
 
     // 搖框狀態
@@ -529,7 +532,7 @@ class UIManager {
 
   updateHUD(level, msTime) {
     this.hud.level.textContent = level;
-    this.hud.time.textContent = GameTimer.formatTime(msTime);
+    this.hud.time.textContent = GameTimer.formatTime(msTime, gameSettings.showMs);
   }
 
   updateSkillHUD(drillCount, hintCount) {
@@ -663,6 +666,7 @@ class UIManager {
     this.elements.selectLanguage.value = gameSettings.language; // Added language setting
     if (this.elements.settingBgm) this.elements.settingBgm.checked = gameSettings.bgmEnabled;
     if (this.elements.settingSfx) this.elements.settingSfx.checked = gameSettings.sfxEnabled;
+    if (this.elements.settingShowMs) this.elements.settingShowMs.checked = gameSettings.showMs;
     this.showMenu('settings');
   }
 
@@ -673,6 +677,7 @@ class UIManager {
     gameSettings.language = this.elements.selectLanguage.value; // Added language setting
     if (this.elements.settingBgm) gameSettings.bgmEnabled = this.elements.settingBgm.checked;
     if (this.elements.settingSfx) gameSettings.sfxEnabled = this.elements.settingSfx.checked;
+    if (this.elements.settingShowMs) gameSettings.showMs = this.elements.settingShowMs.checked;
     gameSettings.save();
     
     // 立即套用 BGM 開關
