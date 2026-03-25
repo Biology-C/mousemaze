@@ -96,16 +96,18 @@ class GameTimer {
    * @param {number} ms 毫秒
    * @returns {string} 格式化字串
    */
-  static formatTime(ms) {
+  static formatTime(ms, showMs = true) {
     const totalSeconds = Math.floor(ms / 1000);
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
-    const milliseconds = Math.floor(ms % 1000);
 
     const padMin = String(minutes).padStart(2, '0');
     const padSec = String(seconds).padStart(2, '0');
-    const padMs = String(milliseconds).padStart(3, '0');
 
+    if (!showMs) return `${padMin}:${padSec}`;
+
+    const milliseconds = Math.floor(ms % 1000);
+    const padMs = String(milliseconds).padStart(3, '0');
     return `${padMin}:${padSec}.${padMs}`;
   }
 }

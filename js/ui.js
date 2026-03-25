@@ -213,8 +213,8 @@ class UIManager {
       if (this.game.state === Game.STATE_PLAYING && window.innerWidth <= 768 && window.innerHeight > window.innerWidth) {
         this.elements.mobileControls.classList.add('active');
         this.elements.mobileControls.classList.remove('hidden');
-        // 燈塔按鈕：第 6 關（含）以後才顯示
-        const isBeaconLevel = this.game.currentLevel >= 6;
+        // 燈塔按鈕：第 3 關（含）以後才顯示
+        const isBeaconLevel = this.game.currentLevel >= 3;
         if (this.elements.btnSkillMark) {
           if (isBeaconLevel) {
             this.elements.btnSkillMark.classList.remove('hidden');
@@ -378,10 +378,10 @@ class UIManager {
     const knob = this.elements.joystickKnob;
     if (!zone || !base || !knob) return;
 
-    const baseRadius = 80;  // 160px 搖桿 half
-    const knobRadius = 32;  // knob 半徑 (~40% 的 80px)
+    const baseRadius = 60;  // 120px 搖桿 half
+    const knobRadius = 22;  // knob 半徑 (~37% 的 60px)
     const maxDist = baseRadius - knobRadius;
-    const deadZone = 18;
+    const deadZone = 14;
 
     const getBaseCenter = () => {
       const rect = base.getBoundingClientRect();
@@ -425,7 +425,7 @@ class UIManager {
       this._joystickActive = false;
       this._joystickTouchId = null;
       knob.style.left = (baseRadius - knobRadius) + 'px';
-      knob.style.top = (baseRadius - knobRadius) + 'px';
+      knob.style.top  = (baseRadius - knobRadius) + 'px';
       this._releaseJoystickDir();
     };
 
@@ -882,7 +882,7 @@ class UIManager {
    * @param {string} key 提示文案的鍵名 (beacon, snakeSeen, attack)
    * @param {number} duration 
    */
-  showHint(key, duration = 2800) {
+  showHint(key, duration = 8000) {
     const el = document.getElementById('tutorial-hint');
     if (!el) return;
 
@@ -891,12 +891,32 @@ class UIManager {
 
     el.textContent = text;
     el.classList.add('show');
+    el.style.pointerEvents = 'auto'; // 序求、點擊可間除
 
+    // 清除舊計時器和按鍵監聽
     if (this._hintTimer) clearTimeout(this._hintTimer);
-    this._hintTimer = setTimeout(() => {
+    if (this._hintKeyHandler) {
+      window.removeEventListener('keydown', this._hintKeyHandler, { once: true });
+      window.removeEventListener('touchstart', this._hintKeyHandler, { once: true });
+    }
+
+    const dismiss = () => {
       el.classList.remove('show');
+      el.style.pointerEvents = 'none';
       this._hintTimer = null;
-    }, duration);
+      this._hintKeyHandler = null;
+      window.removeEventListener('keydown', dismiss);
+      window.removeEventListener('touchstart', dismiss);
+    };
+
+    this._hintKeyHandler = dismiss;
+
+    // 8 秒後自動關閉
+    this._hintTimer = setTimeout(dismiss, duration);
+
+    // 任意鍵 / 觸控可立即關閉
+    window.addEventListener('keydown', dismiss, { once: true });
+    window.addEventListener('touchstart', dismiss, { once: true });
   }
 
   // 更新介面語言

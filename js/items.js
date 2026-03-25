@@ -222,6 +222,7 @@ class ItemManager {
         }
         
         if (window.audioManager) window.audioManager.playItemPickup();
+        haptic('collect');
 
         this.items.splice(i, 1);
       }

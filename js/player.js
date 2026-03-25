@@ -311,8 +311,10 @@ class Player {
           this.targetPixelY = nextY * this.cellSize;
           this.isMoving = true;
           if (window.audioManager) window.audioManager.playWalk();
+          haptic('move');
         } else {
           // 不能移動 (撞牆)：播放輕微回彈效果
+          haptic('bump');
           this._playBumpAnimation();
           // 首次撞牆提示鑽牆技能
           if (this._onBump) this._onBump();
@@ -444,6 +446,7 @@ class Player {
         targetCell.walls[oppWallIdx] = false;
       }
       this.drillCount--;
+      haptic('drill');
       this._playBumpAnimation();
       if (window.audioManager) window.audioManager.playDig();
     }
@@ -465,6 +468,7 @@ class Player {
       const result = this.enemyManager.attackAt(targetX, targetY);
       const hit = typeof result === 'object' ? result.hit : result;
       if (hit) {
+        haptic('hit');
         this._playBumpAnimation();
         if (window.audioManager) window.audioManager.playHit();
         if (result && result.killed) {

@@ -14,6 +14,7 @@ class Settings {
     this.language = 'zh'; // 語言 (預設繁中)
     this.bgmEnabled = true; // 開啟音樂
     this.sfxEnabled = true; // 開啟音效
+    this.showMs = true; // 顯示毫秒 (預設開啟)
 
     this.load();
   }
@@ -74,3 +75,19 @@ class Settings {
 
 // 建立全域單例
 const gameSettings = new Settings();
+
+/**
+ * 觸覺回饋 (Haptic Feedback)
+ * 僅在支援 navigator.vibrate 的裝置上作用 (多數 Android 手機)
+ * @param {'move'|'bump'|'drill'|'hit'|'collect'} type
+ */
+function haptic(type) {
+  if (!navigator.vibrate) return;
+  switch (type) {
+    case 'move':    navigator.vibrate(8); break;
+    case 'bump':    navigator.vibrate(25); break;
+    case 'drill':   navigator.vibrate([25, 10, 25]); break;
+    case 'hit':     navigator.vibrate(50); break;
+    case 'collect': navigator.vibrate([15, 10, 15]); break;
+  }
+}
