@@ -88,7 +88,7 @@ let _hapticLastTime = 0;
 function haptic(type) {
   if (!navigator.vibrate) return;
   const now = Date.now();
-  if (now - _hapticLastTime < 3000) return;
+  if (now - _hapticLastTime < 1500) return;
   _hapticLastTime = now;
   switch (type) {
     case 'bump':    navigator.vibrate(25); break;
