@@ -83,10 +83,14 @@ const gameSettings = new Settings();
  * 僅在支援 navigator.vibrate 的裝置上作用 (多數 Android 手機)
  * @param {'move'|'bump'|'drill'|'hit'|'collect'} type
  */
+let _hapticLastTime = 0;
+
 function haptic(type) {
   if (!navigator.vibrate) return;
+  const now = Date.now();
+  if (now - _hapticLastTime < 3000) return;
+  _hapticLastTime = now;
   switch (type) {
-    case 'move':    navigator.vibrate(8); break;
     case 'bump':    navigator.vibrate(25); break;
     case 'drill':   navigator.vibrate([25, 10, 25]); break;
     case 'hit':     navigator.vibrate(50); break;

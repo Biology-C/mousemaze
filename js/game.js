@@ -324,7 +324,7 @@ class Game {
           
           if (dist <= playerVision) {
             this.tutorialHints.firstSnakeSeen = true;
-            this.ui.showHint("snakeSeen", 3500);
+            this.ui.showHint("snakeSeen");
             this.saveProgress();
             
             // 加入 0.8s 緩衝：暫時降低蛇速
