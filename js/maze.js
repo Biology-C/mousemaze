@@ -28,6 +28,7 @@ class Maze {
     this.grid = [];
     this.start = { x: 0, y: 0 };
     this.end = { x: 0, y: 0 };
+    this.layoutVersion = 0;
     
     // 方向定義：[dx, dy, 當前牆壁索引, 對面牆壁索引]
     // 牆壁索引: 0:上, 1:右, 2:下, 3:左
@@ -69,6 +70,11 @@ class Maze {
     
     // 4. 根據關卡放置特殊地磚
     if (currentLevel >= 6) this._placeSpecialTiles(currentLevel);
+    this.touchLayout();
+  }
+
+  touchLayout() {
+    this.layoutVersion++;
   }
 
   /**
@@ -251,6 +257,7 @@ class Maze {
       if ((ex !== this.start.x || ey !== this.start.y) &&
           (ex !== this.end.x || ey !== this.end.y)) {
         this.end = { x: ex, y: ey };
+        this.touchLayout();
         return;
       }
     }
@@ -285,8 +292,9 @@ class Maze {
     const key = (x, y) => `${x},${y}`;
     visited.add(key(sx, sy));
 
-    while (queue.length > 0) {
-      const [cx, cy] = queue.shift();
+    let queueIndex = 0;
+    while (queueIndex < queue.length) {
+      const [cx, cy] = queue[queueIndex++];
 
       if (cx === ex && cy === ey) {
         // 回溯找路徑

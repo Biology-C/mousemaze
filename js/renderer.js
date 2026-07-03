@@ -7,6 +7,8 @@ class Renderer {
   constructor(canvasId) {
     this.canvas = document.getElementById(canvasId);
     this.ctx = this.canvas.getContext('2d');
+    this.fogCanvas = document.createElement('canvas');
+    this.fogCtx = this.fogCanvas.getContext('2d');
     
     this.cellSize = 48;
     this.wallThickness = 6;
@@ -50,8 +52,11 @@ class Renderer {
     this.canvas.height = window.innerHeight;
     this.camera.width = this.canvas.width;
     this.camera.height = this.canvas.height;
+    this.fogCanvas.width = this.canvas.width;
+    this.fogCanvas.height = this.canvas.height;
     
     this.ctx.imageSmoothingEnabled = false;
+    this.fogCtx.imageSmoothingEnabled = true;
   }
 
   updateCamera(player) {
@@ -367,12 +372,11 @@ class Renderer {
 
     // 使用 compositing 來實現多光源穿孔
     // 先在臨時 canvas 上繪製迷霧，再用 destination-out 挖洞
-    const tempCanvas = document.createElement('canvas');
-    tempCanvas.width = this.camera.width;
-    tempCanvas.height = this.camera.height;
-    const tctx = tempCanvas.getContext('2d');
+    const tempCanvas = this.fogCanvas;
+    const tctx = this.fogCtx;
 
     // 填滿迷霧色
+    tctx.globalCompositeOperation = 'source-over';
     tctx.fillStyle = this.colors.fog;
     tctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
 

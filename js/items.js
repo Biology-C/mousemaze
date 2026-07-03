@@ -9,6 +9,7 @@ class ItemManager {
     this.maze = maze;
     this.player = player;
     this.game = game;
+    this._trapCache = { key: null, result: false };
     
     this.items = [];       // 地圖上的道具 (香菇、礦石、能量起司)
     this.breadcrumbs = []; // 玩家留下的燈塔記號
@@ -189,10 +190,23 @@ class ItemManager {
    */
   isPlayerTrapped(px, py) {
     if (this.player && this.player.drillCount > 0) {
+      this._trapCache = { key: null, result: false };
       return false; // 持有鑽頭不算困死
     }
+    const cacheKey = [
+      px,
+      py,
+      this.maze.end.x,
+      this.maze.end.y,
+      this.maze.layoutVersion
+    ].join('|');
+    if (this._trapCache.key === cacheKey) {
+      return this._trapCache.result;
+    }
     const path = this.maze.findPath(px, py, this.maze.end.x, this.maze.end.y);
-    return path.length === 0 && !(px === this.maze.end.x && py === this.maze.end.y);
+    const result = path.length === 0 && !(px === this.maze.end.x && py === this.maze.end.y);
+    this._trapCache = { key: cacheKey, result };
+    return result;
   }
 
   /**

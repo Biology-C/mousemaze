@@ -444,6 +444,9 @@ class Player {
       if (targetCell) {
         targetCell.walls[oppWallIdx] = false;
       }
+      if (this.maze && typeof this.maze.touchLayout === 'function') {
+        this.maze.touchLayout();
+      }
       this.drillCount--;
       haptic('drill');
       this._playBumpAnimation();

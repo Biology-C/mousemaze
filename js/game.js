@@ -393,8 +393,6 @@ class Game {
     }
 
     // 更新 HUD
-    this.ui.updateHUD(this.currentLevel, this.timer.getCurrentLevelTime());
-    this.ui.updateSkillHUD(this.player.drillCount, this.player.hintCount);
 
     // 渲染畫面
     this.renderer.render(this.maze, this.player, this.itemManager, this.enemyManager);
@@ -453,6 +451,9 @@ class Game {
    */
   _toggleMergingWalls() {
     this.mergingWallClosed = !this.mergingWallClosed;
+    if (this.maze && typeof this.maze.touchLayout === 'function') {
+      this.maze.touchLayout();
+    }
     
     // 遍歷整個迷宮的格子
     for (let x = 0; x < this.maze.width; x++) {
