@@ -1,74 +1,75 @@
 # 🐭 Bio-Logic Mouse Co.
 
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-Live-brightgreen)](https://biology-c.github.io/mousemaze/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-A pixel-art maze exploration game built with pure JavaScript and HTML5 Canvas. Challenge your sense of direction and use gadgets to find the exit!
+[繁體中文](README.md) | [English](README_EN.md)
 
-**🏠 Play Now: [https://biology-c.github.io/mousemaze/](https://biology-c.github.io/mousemaze/)**
+A browser-based pixel-art maze exploration game built with pure JavaScript. You play as a mouse navigating foggy mazes, collecting upgrades, placing beacons, avoiding snakes, and racing for the exit.
 
----
+Play now: [https://biology-c.github.io/mousemaze/](https://biology-c.github.io/mousemaze/)
+
+## Project highlights
+
+- 18 progressive levels, including 6 tutorial stages
+- Pure front-end, zero dependencies, no build step required
+- Traditional Chinese / English UI plus desktop and mobile controls
+- Save & continue, per-level records, playtime ranking, and cloud sync
+- Recently refactored to split UI copy, level config, and progress flow into separate modules
 
 ## 🌟 Features
 
-*   **18 Progressive Levels**: 6 tutorial stages covering movement, digging, lighthouses, items, and enemies — everything you need before the real challenge begins.
-*   **Tutorial Title System**: Earn unique titles by completing tutorials (🐾 Novice → ⚔️ Hero Mouse).
-*   **🐍 Snake Enemy System**:
-    *   A snake spawns every 45 seconds — don't let it catch you!
-    *   Snakes chase Lighthouses first, then the player.
-    *   Normal speed: 1 cell/3 s. Every 8.5 s they burst into a sprint (1 cell/s) for 2 seconds.
-    *   Face a snake and press `Space` to attack; 3 hits to defeat! (Defeating awards +3 drills)
-*   **🎵 Audio System**: BGM and SFX for walking/digging (music starts on first interaction). Both can be toggled independently in Settings.
-*   **🔦 Lighthouse Beacons**: Place permanent lighthouses to illuminate fog and lure snakes away! *(Unlocked from Level 3)*
-*   **⚡ Smart Action Button**: `Space` drills through walls when facing one, or attacks snakes when the path is clear.
-*   **💡 Route Hint**: Spend hint charges to reveal the path to the exit.
-*   **Gadgets**:
-    *   🧀 **Dig Cheese**: Refills drill uses.
-    *   🍄 **Magic Mushroom**: Grants temporary full-map vision and **permanently** increases hint path distance by 10 cells (persists across levels).
-    *   💎 **Raw Ore**: **Permanently** increases sight radius by 2 cells (persists across levels).
-    *   🌀 **Teleporters**: Two-way long-distance travel.
-*   **🧩 Special Tiles & Hazards**:
-    *   ❓ **Chance Chest (Lv6+)**: Drops items, spawns a snake, or relocates the exit!
-    *   ⚠️ **Exit Shifter (Lv6+)**: Instantly teleports the maze exit to a new random location.
-    *   🧱 **Iron Walls (Lv8+)**: Indestructible grey walls; drills don't work here.
-    *   🩸 **Merging Walls (Lv8+)**: Red walls that open and close every 3 seconds. Being crushed means instant Game Over!
-    *   ⏩ **Boost Tiles (Lv8+)**: Stepping on green tiles gives both the player and snakes 1.5× speed for 2 seconds.
-    *   ⏬ **Slow Tiles (Lv8+)**: Stepping on red tiles reduces both the player and snakes to 0.5× speed for 2 seconds.
-    *   🔄 **Inverse Tiles (Lv10+)**: Completely reverses movement controls while standing on them.
-    *   ➡️ **One-way Tiles (Lv10+)**: Light-blue arrows that only allow movement in the indicated direction.
-*   **3 Difficulty Levels**: Heaven (21 drills), Normal (15), Famine (9).
-*   **Leaderboard**: Best times per level + cumulative playtime titles, synced with Google Sheets cloud ranking.
-*   **Stuck Detection**: Auto-restart with a message if you trap yourself.
-*   **GM Mode**: Hidden cheat mode — skip levels, see the full map, and monitor stats.
-*   **Mobile Ready**: RWD layout with an analog joystick; HUD uses icon dot-grids (⚡ red dots / 💡 yellow dots) instead of text counters for at-a-glance readability.
-
----
+- **18 progressive levels**: The first 6 levels teach the core systems, followed by 12 harder stages with more hazards and special tiles.
+- **Snake enemy system**:
+  - A snake appears every 45 seconds.
+  - Snakes prioritize lighthouses and chase the player when no beacon is available.
+  - Face the snake's body and press `Space` to attack; it takes 3 hits to defeat.
+- **Beacon and hint systems**:
+  - Press `Q` to place a lighthouse that reveals fog and distracts snakes.
+  - Press `Z` to spend a hint charge and reveal a route toward the exit.
+- **Persistent upgrades and items**:
+  - 🧀 Cheese: increases drill count
+  - 🍄 Mushroom: grants temporary full-map vision and permanently extends hint range
+  - 💎 Ore: permanently increases sight radius
+  - 🌀 Portal: two-way long-distance teleport
+- **Special tiles and hazards**:
+  - ❓ Chance chest, ⚠️ exit shifter
+  - 🧱 Iron walls, 🩸 merging walls
+  - ⏩ speed-up / ⏬ slow-down tiles
+  - 🔄 reverse controls, ➡️ one-way tiles
+- **Settings and accessibility**:
+  - Three difficulties: Heaven / Normal / Famine
+  - Theme, language, BGM / SFX toggles, millisecond display
+  - Mobile joystick and touch skill buttons
+- **Ranking and progress systems**:
+  - Per-level best records
+  - Playtime ranking with titles
+  - Local save / continue
+  - Google Sheets-backed cloud leaderboard sync
 
 ## 🎮 Controls
 
-### Desktop (Keyboard)
+### Desktop (keyboard)
 
 | Key | Action |
 |-----|--------|
 | `↑↓←→` / `WASD` | Move |
-| `Space` | Dig (wall ahead) / Attack (clear path) |
-| `Q` | Place Lighthouse (in front) |
-| `Z` | Route hint |
+| `Space` | Dig if a wall is ahead / attack if path is clear |
+| `Q` | Place lighthouse |
+| `Z` | Use route hint |
 | `Esc` | Pause |
-| `imsupergm` | GM Mode (skip levels, full map, monitor stats) |
-| `↑↑↓↓←←→→ba` | Classic Cheat (Infinite Drills) |
+| `imsupergm` | Toggle GM mode |
+| `↑↑↓↓←←→→ba` | Classic cheat (infinite drills) |
 
-### Mobile / Tablet (Touch)
+### Mobile / tablet (touch)
 
-*   **Center of lower screen**: Analog joystick — comfortable for both left- and right-handed players.
-*   **Bottom-right row**: ⚡ Action (dig/attack), 💡 Hint, 🔦 Lighthouse *(unlocked from Level 3)*.
-*   Access Settings from the Pause menu.
+- Lower-center screen: analog joystick
+- Bottom skill row: ⚡ action, 💡 hint, 🔦 lighthouse
+- Settings are available from the main menu and pause menu
 
----
+## 🏆 Title system
 
-## 🏆 Title System
-
-### Tutorial Titles
+### Tutorial titles
 
 | Level | Theme | Title |
 |-------|-------|-------|
@@ -79,7 +80,7 @@ A pixel-art maze exploration game built with pure JavaScript and HTML5 Canvas. C
 | 5 | Teleport & Hint | 🌀 Time Traveler |
 | 6 | Beware of Snakes | ⚔️ Hero Mouse |
 
-### Playtime Titles
+### Playtime titles
 
 | Cumulative Time | Title |
 |-----------------|-------|
@@ -91,28 +92,79 @@ A pixel-art maze exploration game built with pure JavaScript and HTML5 Canvas. C
 | < 120 min | 👑 Maze King |
 | 120+ min | 🌟 Legendary Vanguard |
 
----
+## 🚀 Run locally
 
-## 🛠️ Tech Stack
+This project has no build step and no package dependency.
 
-*   **Languages**: HTML5, CSS3, Vanilla JavaScript (zero dependencies)
-*   **Rendering**: Canvas API (multi-source fog-of-war system)
-*   **Core Algorithms**:
-    *   **Maze Generation**: Randomized Prim's Algorithm
-    *   **Pathfinding**: BFS (Breadth-First Search) for hints and stuck detection
-    *   **Snake AI**: Greedy pathfinding (lighthouse → player) with periodic speed bursts
-*   **Storage**: LocalStorage (save data, leaderboard, playtime) + Google Sheets cloud leaderboard
+### Option 1: open directly
 
----
+Open [`index.html`](./index.html) in a browser.
+
+### Option 2: use a static server (recommended)
+
+If you want more reliable local testing for audio, leaderboard behavior, or mobile layout, run a simple static server:
+
+```bash
+npx serve .
+```
+
+or:
+
+```bash
+python -m http.server 8000
+```
+
+Then open `http://localhost:3000` or `http://localhost:8000`.
+
+## 🧱 Project structure
+
+```text
+mousemaze/
+├─ css/                # Styling and themes
+├─ js/
+│  ├─ main.js          # Entry point
+│  ├─ game.js          # Core game state and loop
+│  ├─ game_content.js  # Level size and tutorial config
+│  ├─ game_progress.js # Save / finish / leaderboard flow
+│  ├─ ui.js            # Menus and UI behavior
+│  ├─ ui_content.js    # I18N and UI copy
+│  ├─ maze.js          # Maze generation and pathfinding
+│  ├─ player.js        # Player movement and skills
+│  ├─ enemy.js         # Snake AI
+│  ├─ items.js         # Items and special tiles
+│  ├─ renderer.js      # Canvas rendering, fog, minimap
+│  ├─ storage.js       # Local save and records
+│  ├─ cloud_storage.js # Google Sheets sync
+│  ├─ settings.js      # Persistent settings
+│  └─ timer.js         # Timing utilities
+├─ music/              # Audio assets
+├─ raw_assets/         # Source art / raw assets
+└─ index.html          # Main page
+```
+
+## 🛠️ Tech notes
+
+- **Languages**: HTML5, CSS3, Vanilla JavaScript
+- **Rendering**: Canvas API
+- **Maze generation**: randomized Prim's algorithm
+- **Hints / trapped detection**: BFS pathfinding
+- **Enemy logic**: greedy chasing plus periodic speed changes
+- **Storage**:
+  - LocalStorage for settings, save data, records, and playtime
+  - Google Apps Script / Google Sheets for cloud leaderboard sync
+
+## Notes
+
+- Local records and playtime rankings reset daily on `UTC+8`.
+- Cloud leaderboard sync is configured in [`js/cloud_storage.js`](./js/cloud_storage.js).
+- The project intentionally remains framework-free and static, making it a good base for more level content, UI polish, or further refactoring.
 
 ## 🤝 Contributing
 
-1.  Fork the repository.
-2.  Create a feature branch (`git checkout -b feature/NewFeature`).
-3.  Commit and push your changes.
-4.  Open a Pull Request.
-
----
+1. Fork the repository
+2. Create a branch: `git checkout -b feature/your-feature`
+3. Commit your changes
+4. Open a Pull Request
 
 ## 📄 License
 
