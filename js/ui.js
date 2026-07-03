@@ -100,112 +100,11 @@ class UIManager {
     this.currentLbLevel = 1;
     this.currentLbTab = 'level'; // 'level' 或 'time'
 
+    this.HINT_TEXTS = window.UI_HINT_TEXTS || {};
+    this.I18N = window.UI_I18N || {};
+
     this.bindEvents();
     this.checkContinueBtn();
-    
-    // 多語系提示文案 (僅保留 zh, en)
-    this.HINT_TEXTS = {
-      zh: {
-        beacon: "燈塔會照亮，但也會封路。",
-        snakeSeen: "蛇優先追燈塔，沒有燈塔時才追你。",
-        attack: "現在可攻擊！"
-      },
-      en: {
-        beacon: "Lighthouses illuminate, but also block paths.",
-        snakeSeen: "Snakes prioritize lighthouses. They chase you only if none are near.",
-        attack: "Attack now!"
-      }
-    };
-
-    // 介面全域翻譯
-    this.I18N = {
-      zh: {
-        level: "關卡", time: "時間", dig: "打洞", hint: "提示",
-        pause: "暫停", action: "動作", beacon: "燈塔", settings: "設定",
-        start: "開始新遊戲", continue: "繼續遊戲", leaderboard: "排行榜", help: "操作說明",
-        pause_title: "遊戲暫停", resume: "繼續遊戲", restart: "重新開始本關", quit: "回主選單",
-        complete: "關卡完成！", level_time: "本關用時", total_time: "總計用時",
-        next_level: "進入下一關", rest: "休息結算 (存檔)", close: "關閉", help_close: "我知道了",
-        save_close: "儲存並關閉",
-        settings_title: "遊戲設定", label_lang: "語言 / Language :", label_speed: "移動速度 :", 
-        label_theme: "主題色系 :", label_difficulty: "難易度 :",
-        speed_low: "慢 (0.15)", speed_mid: "中 (0.2)", speed_high: "快 (0.25)",
-        theme_dark: "暗色模式 (Dark)", theme_light: "亮色模式 (Light)",
-        diff_heaven: "天堂 (打洞21次)", diff_normal: "一般 (打洞15次)", diff_famine: "飢荒 (打洞9次)",
-        lb_title: "最佳探索者", lb_tab_level: "關卡紀錄", lb_tab_time: "遊玩時間", 
-        help_title: "操作說明",
-        help_move: "🎮 移動 (Move)：[W][A][S][D] / [Arrows]",
-        help_space: "⚡ 空白鍵 (Space)：面前有牆→打洞 (消耗次數)；無牆→攻擊 (不消耗)",
-        help_beacon: "🔦 燈塔 (Beacon)：[Q] 鍵 (照亮迷霧，並作為誘餌吸引蛇)",
-        help_hint: "💡 提示 (Hint)：[Z] 鍵 (顯示路線指引)",
-        help_pause: "⏸️ 暫停 (Pause)：[ESC] 鍵",
-        help_mushroom: "🍄 紅香菇 (Mushroom)：短暫獲得全圖透視能力",
-        help_ore: "💎 藍礦石 (Ore)：永久增加視野範圍",
-        help_cheese: "🧀 能量起司 (Cheese)：額外增加 1 次打洞次數",
-        help_portal: "🌀 紫光圈 (Portal)：雙向遠距離傳送陣",
-        help_snake1: "🐍 蛇 (Snake)：每 45 秒隨機出現，被碰到就失敗！",
-        help_snake2: "　　蛇會追蹤燈塔。沒有燈塔時追玩家。",
-        help_snake3: "　　面向蛇身按空白鍵攻擊，3次消滅！",
-        tut1_name: "移動入門", tut1_desc: "使用方向鍵或 WASD 移動到金色出口！", tut1_title: "🐾 初學者",
-        tut2_name: "鑽牆技巧", tut2_desc: "面向牆壁按空白鍵鑽牆！撿起🧀能量起司增加次數。", tut2_title: "⛏️ 鑽洞鼠",
-        tut3_name: "燈塔記號", tut3_desc: "按 Q 在面前放置燈塔！不僅可照亮迷霧，還能吸引蛇的注意。", tut3_title: "💡 燈塔守衛",
-        tut4_name: "道具收集", tut4_desc: "收集紅香菇🍄透視、藍礦石💎增視野、能量起司🧀增鑽牆！", tut4_title: "🎒 探險家",
-        tut5_name: "傳送與提示", tut5_desc: "踩上紫色傳送陣移動！按 Z 使用路線提示。", tut5_title: "🌀 時空旅者",
-        tut6_name: "蛇出沒注意", tut6_desc: "躲避蛇頭！面向蛇身按空白鍵攻擊，3次消滅！用燈塔誘敵。", tut6_title: "⚔️ 勇者鼠",
-        msg_snake_spawn: "🐍 我的迷宮裡有條蛇",
-        msg_eaten: "🐍 這隻老鼠被蛇吃了。",
-        msg_trapped: "🧱 這隻老鼠把自己困死了。",
-        msg_cheat: "🐭 金手指啟動！無限鑽牆！",
-        msg_gm_on: "👑 GM 模式開啟！",
-        msg_gm_off: "GM 模式關閉",
-        enter_name: "輸入冒險者名稱",
-        confirm_start: "確認出發",
-        back: "返回"
-      },
-      en: {
-        level: "Level", time: "Time", dig: "Dig", hint: "Hint",
-        pause: "Pause", action: "Action", beacon: "Beacon", settings: "Settings",
-        start: "Start New Game", continue: "Continue", leaderboard: "Leaderboard", help: "How to Play",
-        pause_title: "Game Paused", resume: "Resume", restart: "Restart Level", quit: "Main Menu",
-        complete: "Level Complete!", level_time: "Level Time", total_time: "Total Time",
-        next_level: "Next Level", rest: "Rest & Save", close: "Close", help_close: "Got it",
-        save_close: "Save & Close",
-        settings_title: "Settings", label_lang: "Language :", label_speed: "Speed :",
-        label_theme: "Theme :", label_difficulty: "Difficulty :",
-        speed_low: "Slow (0.15)", speed_mid: "Mid (0.2)", speed_high: "Fast (0.25)",
-        theme_dark: "Dark Mode", theme_light: "Light Mode",
-        diff_heaven: "Heaven (Dig x21)", diff_normal: "Normal (Dig x15)", diff_famine: "Famine (Dig x9)",
-        lb_title: "Top Explorers", lb_tab_level: "Level Records", lb_tab_time: "Play Time",
-        help_title: "How to Play",
-        help_move: "🎮 Move: [W][A][S][D] / [Arrows]",
-        help_space: "⚡ Space: Facing wall → Dig (uses drill); No wall → Attack",
-        help_beacon: "🔦 Beacon: [Q] (Illuminates fog, acting as bait for snakes)",
-        help_hint: "💡 Hint: [Z] (Shows route guide)",
-        help_pause: "⏸️ Pause: [ESC]",
-        help_mushroom: "🍄 Mushroom: Grants temporary full map vision",
-        help_ore: "💎 Ore: Permanently increases sight radius",
-        help_cheese: "🧀 Cheese: Adds +1 extra dig count",
-        help_portal: "🌀 Portal: Two-way long-distance teleportation",
-        help_snake1: "🐍 Snake: Appears randomly every 45s, touch means game over!",
-        help_snake2: "　　Snakes chase beacons. Without beacons, they chase you.",
-        help_snake3: "　　Face its body and press Space to attack, 3 hits to kill!",
-        tut1_name: "Movement Basics", tut1_desc: "Use arrow keys or WASD to reach the golden exit!", tut1_title: "🐾 Beginner",
-        tut2_name: "Digging Walls", tut2_desc: "Face a wall and press Space to dig! Pick up 🧀 Cheese to increase uses.", tut2_title: "⛏️ Digger Mouse",
-        tut3_name: "Beacon Marker", tut3_desc: "Press Q to place a beacon! Illuminates fog and acts as bait for snakes.", tut3_title: "💡 Lighthouse Keeper",
-        tut4_name: "Item Collection", tut4_desc: "Collect 🍄 Mushroom for vision, 💎 Ore for sight, 🧀 Cheese for digs!", tut4_title: "🎒 Explorer",
-        tut5_name: "Teleport and Hint", tut5_desc: "Step on purple portals! Press Z to use route hints.", tut5_title: "🌀 Time Traveler",
-        tut6_name: "Beware of Snakes", tut6_desc: "Dodge the snake! Face it and press Space to attack (3 hits)! Use beacons to lure.", tut6_title: "⚔️ Brave Mouse",
-        msg_snake_spawn: "🐍 A snake in my maze!",
-        msg_eaten: "🐍 This mouse was eaten by a snake.",
-        msg_trapped: "🧱 This mouse trapped itself to death.",
-        msg_cheat: "🐭 Cheat activated! Infinite digs!",
-        msg_gm_on: "👑 GM Mode ON!",
-        msg_gm_off: "GM Mode OFF",
-        enter_name: "Enter Adventurer Name",
-        confirm_start: "Confirm & Start",
-        back: "Back"
-      }
-    };
 
     window.addEventListener('resize', () => this.checkMobileControls());
     this.updateUILanguage();
@@ -712,29 +611,6 @@ class UIManager {
     }
   }
 
-  // 更新所有帶有 data-i18n 屬性的元素文字
-  updateUILanguage() {
-    const lang = gameSettings.language;
-    const dict = this.I18N[lang];
-    if (!dict) return;
-
-    document.querySelectorAll('[data-i18n]').forEach(el => {
-      const key = el.getAttribute('data-i18n');
-      if (dict[key]) {
-        if (el.tagName === 'INPUT' && el.type === 'text') {
-          el.placeholder = dict[key];
-        } else {
-          el.textContent = dict[key];
-        }
-      }
-    });
-    // 特殊處理：如果有外部按鈕標籤
-    if (this.elements.btnPause) {
-      const pauseText = lang === 'en' ? 'Pause' : '暫停';
-      this.elements.btnPause.innerHTML = `<span data-i18n="pause">${pauseText}</span> (ESC)`;
-    }
-  }
-
   /**
    * 關卡排行榜
    */
@@ -938,10 +814,15 @@ class UIManager {
   // 更新介面語言
   updateUILanguage() {
     const lang = gameSettings.language || 'zh';
-    const dict = this.I18N[lang] || this.I18N.zh;
+    const dict = this.I18N[lang] || this.I18N.zh || {};
     document.querySelectorAll('[data-i18n]').forEach(el => {
       const key = el.getAttribute('data-i18n');
-      if (key && dict[key]) el.textContent = dict[key];
+      if (!key || !dict[key]) return;
+      if (el.tagName === 'INPUT' && el.type === 'text') {
+        el.placeholder = dict[key];
+      } else {
+        el.textContent = dict[key];
+      }
     });
     // 暫停鈕特殊處理 (含 ESC 提示)
     if (this.hud.btnPause) {

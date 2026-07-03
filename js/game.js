@@ -13,7 +13,7 @@ class Game {
   constructor() {
     this.state = Game.STATE_MENU;
     this.currentLevel = 1;
-    this.maxLevel = 18; // 6 教學 + 12 原關卡
+    this.maxLevel = 18; // 由關卡設定覆蓋
     this._cheatActivated = false; // 避免短時間重複送出設定
     
     // 檢查排行榜每日歸零
@@ -51,25 +51,12 @@ class Game {
       }
     };
 
-    // 教學關配置 (前 6 關)
-    this.tutorialConfig = [
-      null, // padding
-      { nameKey: 'tut1_name', size: 10, descKey: 'tut1_desc', titleKey: 'tut1_title' },
-      { nameKey: 'tut2_name', size: 12, descKey: 'tut2_desc', titleKey: 'tut2_title' },
-      { nameKey: 'tut3_name', size: 12, descKey: 'tut3_desc', titleKey: 'tut3_title' },
-      { nameKey: 'tut4_name', size: 14, descKey: 'tut4_desc', titleKey: 'tut4_title' },
-      { nameKey: 'tut5_name', size: 16, descKey: 'tut5_desc', titleKey: 'tut5_title' },
-      { nameKey: 'tut6_name', size: 16, descKey: 'tut6_desc', titleKey: 'tut6_title' },
-    ];
-
-    // 正式關卡（第 7-18 關）迷宮尺寸
-    this.levelSizes = [
-      0, // padding (index 0不用)
-      // 教學關 1-6
-      10, 12, 12, 14, 16, 16,
-      // 正式關 7-18 (原 1-12)
-      30, 33, 36, 39, 42, 45, 48, 51, 55, 59, 63, 67
-    ];
+    // 關卡配置由外部內容檔提供
+    this.tutorialConfig = window.GAME_TUTORIAL_CONFIG || [];
+    this.levelSizes = window.GAME_LEVEL_SIZES || [];
+    if (this.levelSizes.length > 0) {
+      this.maxLevel = this.levelSizes.length - 1;
+    }
 
     this._animationFrameId = null;
     this.gameLoop = this.gameLoop.bind(this);
@@ -182,22 +169,6 @@ class Game {
       }
       this.startLevel();
     }
-  }
-
-  syncPersistentStatsFromPlayer() {
-    if (!this.player) return;
-    this.persistentStats.sightRadius = this.player.permanentSightRadius;
-    this.persistentStats.hintRange = this.player.hintRange;
-  }
-
-  saveProgress() {
-    this.syncPersistentStatsFromPlayer();
-    Storage.saveGame(
-      this.currentLevel,
-      this.timer.getTotalTime(),
-      this.tutorialHints,
-      this.persistentStats
-    );
   }
 
   /**
@@ -504,28 +475,6 @@ class Game {
   }
 
   /**
-   * 回主選單
-   */
-  quitToMenu(saveCurrent = true) {
-    this.state = Game.STATE_MENU;
-    this.timer.pause();
-    if (this._animationFrameId) cancelAnimationFrame(this._animationFrameId);
-    
-    if (this.player) this.player.destroy();
-    
-    if (saveCurrent) {
-      this.saveProgress();
-    }
-    this.pendingScore = null;
-    this.ui.checkContinueBtn();
-    
-    this.ui.hideHUD();
-    this.ui.hideMenu('pause');
-    this.ui.showMenu('main');
-    this.ui.checkMobileControls();
-  }
-
-  /**
    * 玩家死亡（被蛇吃、困死）→ 顯示訊息、重新開始本關
    */
   handlePlayerDeath(message) {
@@ -536,97 +485,5 @@ class Game {
     this.ui.showGameMessage(message, () => {
       this.restartCurrentLevel();
     });
-  }
-
-  /**
-   * 過關邏輯
-   */
-  handleLevelComplete() {
-    this.state = Game.STATE_LEVEL_COMPLETE;
-    const levelMs = this.timer.commitLevel();
-    this.player.disableControl();
-    const totalMs = this.timer.getTotalTime();
-    this.pendingScore = { level: this.currentLevel, levelMs, totalMs };
-    
-    // 教學關稱號
-    let tutorialTitle = null;
-    if (this.isTutorialLevel()) {
-      const config = this.tutorialConfig[this.currentLevel];
-      if (config) tutorialTitle = this.getI18nString(config.titleKey);
-    }
-
-    // 若開啟金手指或 GM 模式，不記錄排行榜
-    const isCheat = this.isGM || this._cheatActivated;
-    const isNewRecord = isCheat ? false : Storage.isNewRecord(this.currentLevel, levelMs);
-    
-    // 自動傳送結算結果，不跳出手動輸入框
-    const shouldPromptForRecord = isNewRecord && !this.lastPlayerName;
-    if (isNewRecord && !shouldPromptForRecord) {
-      const name = this.lastPlayerName || 'Hero';
-      this.submitHighScore(name, levelMs, totalMs);
-    }
-
-    // 播放勝利音樂
-    if (window.audioManager) window.audioManager.playVictory();
-
-    // 將 isNewRecord 參數傳遞 false 使其不再顯示記錄輸入框
-    this.ui.showLevelComplete(this.currentLevel, shouldPromptForRecord, levelMs, totalMs, tutorialTitle);
-  }
-
-  /**
-   * 提交破紀錄名字
-   */
-  submitHighScore(name, levelMs = null, totalMs = null) {
-    if (this.isGM || this._cheatActivated) return; // 金手指模式不存檔
-    
-    this.lastPlayerName = name;
-    Storage.savePlayerName(name);
-    
-    const pendingScore = this.pendingScore && this.pendingScore.level === this.currentLevel
-      ? this.pendingScore
-      : null;
-    const finalLevelMs = levelMs ?? pendingScore?.levelMs ?? this.timer.getCurrentLevelTime();
-    const finalTotalMs = totalMs ?? pendingScore?.totalMs ?? this.timer.getTotalTime();
-
-    Storage.saveToLeaderboard(this.currentLevel, name, finalLevelMs);
-    
-    // 同步至全球排行榜 (Google Sheets)
-    if (typeof CloudStorage !== 'undefined') {
-      CloudStorage.submitScore(this.currentLevel, name, finalLevelMs);
-    }
-    // 同時記錄遊玩時間
-    Storage.savePlayTime(name, finalTotalMs);
-    this.pendingScore = null;
-    this.ui.hideRecordEntry();
-  }
-
-  /**
-   * 進入下一關
-   */
-  startNextLevel() {
-    if (this.currentLevel < this.maxLevel) {
-      this.currentLevel++;
-      // 如果 player 屬性傳回了變更，先同步一次
-      this.syncPersistentStatsFromPlayer();
-      Storage.saveGame(this.currentLevel, this.timer.getTotalTime(),
-        this.tutorialHints, this.persistentStats);
-      this.startLevel();
-    } else {
-      this.quitToMenu();
-    }
-  }
-
-  /**
-   * 休息結算
-   */
-  restAndSave() {
-    this.syncPersistentStatsFromPlayer();
-    if (this.currentLevel < this.maxLevel) {
-      Storage.saveGame(this.currentLevel + 1, this.timer.getTotalTime(),
-        this.tutorialHints, this.persistentStats);
-    } else {
-      Storage.clearSave();
-    }
-    this.quitToMenu(false);
   }
 }
