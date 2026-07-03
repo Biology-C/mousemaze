@@ -223,7 +223,7 @@ class Player {
         // 抵達新格子，更新提示路徑 (如果處於提示狀態下)
         if (this.hintPath.length > 0) {
            const newPath = this.maze.findPath(this.x, this.y, this.maze.end.x, this.maze.end.y);
-           this.hintPath = newPath.length > 0 ? newPath.slice(0, 30) : [];
+           this.hintPath = newPath.length > 0 ? newPath.slice(0, this.hintRange) : [];
         }
 
         // 抵達新格子，檢查是否有加速/緩速地磚
@@ -483,11 +483,6 @@ class Player {
   triggerMushroomEffect() {
     this.hasMagicVision = true;
     this.visionTimer = 10000; // 10秒
-    // 增加提示距離與次數
-    this.hintRange += 5; // 增加 5 格的預視距離
-    this.hintCount += 1;
-    // 更新 UI 面板
-    if (this.onStatsChanged) this.onStatsChanged();
   }
 
   /**

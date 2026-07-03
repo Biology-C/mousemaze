@@ -41,6 +41,7 @@ class Game {
 
     // 紀錄上一次輸入的姓名
     this.lastPlayerName = Storage.loadPlayerName() || '';
+    this.pendingScore = null;
 
     // 設定計時器回呼更新 UI
     this.timer.onTick = (ms) => {
@@ -183,6 +184,22 @@ class Game {
     }
   }
 
+  syncPersistentStatsFromPlayer() {
+    if (!this.player) return;
+    this.persistentStats.sightRadius = this.player.permanentSightRadius;
+    this.persistentStats.hintRange = this.player.hintRange;
+  }
+
+  saveProgress() {
+    this.syncPersistentStatsFromPlayer();
+    Storage.saveGame(
+      this.currentLevel,
+      this.timer.getTotalTime(),
+      this.tutorialHints,
+      this.persistentStats
+    );
+  }
+
   /**
    * 跳轉至指定關卡 (GM 功能)
    * @param {number} n 
@@ -207,6 +224,7 @@ class Game {
    */
   startLevel() {
     this.state = Game.STATE_PLAYING;
+    this.pendingScore = null;
     this.ui.hideAllMenus();
     this.ui.showHUD();
 
@@ -495,8 +513,9 @@ class Game {
     if (this.player) this.player.destroy();
     
     if (saveCurrent) {
-      Storage.saveGame(this.currentLevel, this.timer.getTotalTime(), this.tutorialHints);
+      this.saveProgress();
     }
+    this.pendingScore = null;
     this.ui.checkContinueBtn();
     
     this.ui.hideHUD();
@@ -523,11 +542,10 @@ class Game {
    */
   handleLevelComplete() {
     this.state = Game.STATE_LEVEL_COMPLETE;
-    this.timer.commitLevel();
+    const levelMs = this.timer.commitLevel();
     this.player.disableControl();
-    
-    const levelMs = this.timer.getCurrentLevelTime();
     const totalMs = this.timer.getTotalTime();
+    this.pendingScore = { level: this.currentLevel, levelMs, totalMs };
     
     // 教學關稱號
     let tutorialTitle = null;
@@ -541,36 +559,43 @@ class Game {
     const isNewRecord = isCheat ? false : Storage.isNewRecord(this.currentLevel, levelMs);
     
     // 自動傳送結算結果，不跳出手動輸入框
-    if (isNewRecord) {
+    const shouldPromptForRecord = isNewRecord && !this.lastPlayerName;
+    if (isNewRecord && !shouldPromptForRecord) {
       const name = this.lastPlayerName || 'Hero';
-      this.submitHighScore(name);
+      this.submitHighScore(name, levelMs, totalMs);
     }
 
     // 播放勝利音樂
     if (window.audioManager) window.audioManager.playVictory();
 
     // 將 isNewRecord 參數傳遞 false 使其不再顯示記錄輸入框
-    this.ui.showLevelComplete(this.currentLevel, false, levelMs, totalMs, tutorialTitle);
+    this.ui.showLevelComplete(this.currentLevel, shouldPromptForRecord, levelMs, totalMs, tutorialTitle);
   }
 
   /**
    * 提交破紀錄名字
    */
-  submitHighScore(name) {
+  submitHighScore(name, levelMs = null, totalMs = null) {
     if (this.isGM || this._cheatActivated) return; // 金手指模式不存檔
     
     this.lastPlayerName = name;
     Storage.savePlayerName(name);
     
-    const levelMs = this.timer.getCurrentLevelTime();
-    Storage.saveToLeaderboard(this.currentLevel, name, levelMs);
+    const pendingScore = this.pendingScore && this.pendingScore.level === this.currentLevel
+      ? this.pendingScore
+      : null;
+    const finalLevelMs = levelMs ?? pendingScore?.levelMs ?? this.timer.getCurrentLevelTime();
+    const finalTotalMs = totalMs ?? pendingScore?.totalMs ?? this.timer.getTotalTime();
+
+    Storage.saveToLeaderboard(this.currentLevel, name, finalLevelMs);
     
     // 同步至全球排行榜 (Google Sheets)
     if (typeof CloudStorage !== 'undefined') {
-      CloudStorage.submitScore(this.currentLevel, name, levelMs);
+      CloudStorage.submitScore(this.currentLevel, name, finalLevelMs);
     }
     // 同時記錄遊玩時間
-    Storage.savePlayTime(name, this.timer.getTotalTime());
+    Storage.savePlayTime(name, finalTotalMs);
+    this.pendingScore = null;
     this.ui.hideRecordEntry();
   }
 
@@ -581,10 +606,7 @@ class Game {
     if (this.currentLevel < this.maxLevel) {
       this.currentLevel++;
       // 如果 player 屬性傳回了變更，先同步一次
-      if (this.player) {
-        this.persistentStats.sightRadius = this.player.permanentSightRadius;
-        this.persistentStats.hintRange = this.player.hintRange;
-      }
+      this.syncPersistentStatsFromPlayer();
       Storage.saveGame(this.currentLevel, this.timer.getTotalTime(),
         this.tutorialHints, this.persistentStats);
       this.startLevel();
@@ -597,10 +619,7 @@ class Game {
    * 休息結算
    */
   restAndSave() {
-    if (this.player) {
-      this.persistentStats.sightRadius = this.player.permanentSightRadius;
-      this.persistentStats.hintRange = this.player.hintRange;
-    }
+    this.syncPersistentStatsFromPlayer();
     if (this.currentLevel < this.maxLevel) {
       Storage.saveGame(this.currentLevel + 1, this.timer.getTotalTime(),
         this.tutorialHints, this.persistentStats);

@@ -50,7 +50,11 @@ class GameTimer {
    */
   commitLevel() {
     this.pause();
-    this.totalTime += this.elapsedTime;
+    const levelMs = this.elapsedTime;
+    this.totalTime += levelMs;
+    this.elapsedTime = 0;
+    this.startTime = 0;
+    return levelMs;
   }
 
   /**

@@ -29,8 +29,8 @@ class AudioManager {
     this.itemSfx = new Audio('music/Collect_Point.ogg');
     this.itemSfx.volume = 0.3;
 
-    // 若 music/Hit.ogg 不存在，瀏覽器會報錯但不會影響遊戲執行
-    this.hitSfx = new Audio('music/Hit.ogg'); 
+    // 先沿用既有素材，避免引用不存在的檔案造成 404
+    this.hitSfx = new Audio('music/Collect_Point.ogg');
     this.hitSfx.volume = 0.3;
 
     this.snakeSpawnSfx = new Audio('music/Alarm1.ogg');

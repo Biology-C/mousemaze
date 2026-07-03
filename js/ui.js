@@ -639,8 +639,19 @@ class UIManager {
       this.elements.btnNextLevel.textContent = "進入下一關";
     }
 
+    const shouldFocusRecordEntry = !!(
+      isNewRecord &&
+      this.elements.recordEntry &&
+      !this.elements.recordEntry.classList.contains('hidden') &&
+      this.elements.inputName
+    );
+
     // Auto focus button
     setTimeout(() => {
+      if (shouldFocusRecordEntry) {
+        this.elements.inputName.focus();
+        return;
+      }
       if (level !== 18 && this.elements.btnNextLevel) {
         this.elements.btnNextLevel.focus();
       } else {
