@@ -12,6 +12,7 @@ Play now: [https://biology-c.github.io/mousemaze/](https://biology-c.github.io/m
 ## Project highlights
 
 - 18 progressive levels, including 6 tutorial stages
+- A separate 8-level “Little Explorer” number-maze mode for roughly ages 5–7, covering `+1`, `+2`, odd/even patterns, and `+5`
 - Pure front-end, zero dependencies, no build step required
 - Traditional Chinese / English UI plus desktop and mobile controls
 - Save & continue, per-level records, playtime ranking, and cloud sync
@@ -19,6 +20,7 @@ Play now: [https://biology-c.github.io/mousemaze/](https://biology-c.github.io/m
 
 ## 🌟 Features
 
+- **8 number-pattern mazes**: Progresses from `1 → 2 → 3 → 4 → 5` to missing end terms, missing middle terms, two blanks, odd/even comparison, and `5 → 10 → 15 → 20 → 25`. Wrong choices have no penalty and receive a pattern hint; levels 7–8 also visualize groups of five with cheese dots.
 - **18 progressive levels**: The first 6 levels teach the core systems, followed by 12 harder stages with more hazards and special tiles.
 - **Snake enemy system**:
   - A snake appears every 45 seconds.
@@ -125,7 +127,10 @@ mousemaze/
 │  ├─ main.js          # Entry point
 │  ├─ game.js          # Core game state and loop
 │  ├─ game_content.js  # Level size and tutorial config
+│  ├─ game_education.js# Education-mode flow
 │  ├─ game_progress.js # Save / finish / leaderboard flow
+│  ├─ education.js     # Number-maze engine
+│  ├─ education_content.js # 8-level curriculum data
 │  ├─ ui.js            # Menus and UI behavior
 │  ├─ ui_content.js    # I18N and UI copy
 │  ├─ maze.js          # Maze generation and pathfinding

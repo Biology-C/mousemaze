@@ -139,9 +139,11 @@ class Renderer {
       }
     }
 
-    // 起點與終點
-    this._drawSpecialCell(maze.start.x, maze.start.y, this.colors.start);
-    this._drawSpecialCell(maze.end.x, maze.end.y, this.colors.end);
+    // 教育模式由數字圓牌表達進度，不另外標示一般模式的起點與終點。
+    if (!educationManager) {
+      this._drawSpecialCell(maze.start.x, maze.start.y, this.colors.start);
+      this._drawSpecialCell(maze.end.x, maze.end.y, this.colors.end);
+    }
 
     if (educationManager) {
       educationManager.draw(this.ctx, this.cellSize, this.wallThickness);

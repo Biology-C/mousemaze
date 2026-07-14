@@ -274,7 +274,7 @@ class Player {
     // 2. 如果沒在移動，且沒有在播放碰撞回彈，才接受新指令
     if (!this.isMoving && !this.isBumping) {
       // 抵達終點後不再接受任何移動或動作指令，使其穩定停在終點以觸發過關
-      if (this.x === this.maze.end.x && this.y === this.maze.end.y) {
+      if (!this.educationMode && this.x === this.maze.end.x && this.y === this.maze.end.y) {
         return;
       }
       let nextX = this.x;

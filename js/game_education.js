@@ -1,15 +1,28 @@
 /**
  * game_education.js
- * 教育模式的進入、完成、重玩與離開流程。
+ * 將八關數列課程接入遊戲狀態與畫面流程。
  */
 
 (() => {
-  if (typeof Game === 'undefined' || typeof EducationLevelOne === 'undefined') return;
+  if (typeof Game === 'undefined' || typeof EducationLevel === 'undefined') return;
 
   Object.assign(Game.prototype, {
-    startEducationLevelOne() {
+    openEducationMenu() {
+      this.state = Game.STATE_MENU;
+      this.timer.pause();
+      this.ui.hideHUD();
+      this.ui.hideEducationHUD();
+      this.ui.showEducationLevelMenu();
+    },
+
+    startEducationLevel(levelNumber = 1) {
+      const levels = window.EDUCATION_LEVELS || [];
+      const config = levels.find((level) => level.id === Number(levelNumber));
+      if (!config) return;
+
       this.state = Game.STATE_PLAYING;
       this.mode = 'education';
+      this.currentEducationLevel = config.id;
       this.pendingScore = null;
       this.timer.pause();
       this.ui.hideAllMenus();
@@ -27,7 +40,7 @@
       this.renderer.cellSize = 56;
       this.renderer.resize();
 
-      this.educationManager = new EducationLevelOne(this);
+      this.educationManager = new EducationLevel(this, config);
       this.maze = this.educationManager.buildMaze();
       this.itemManager = null;
       this.enemyManager = null;
@@ -47,11 +60,24 @@
       this.mergingWallTimer = 0;
       this.mergingWallInterval = Infinity;
 
-      this.ui.showEducationHUD();
+      this.ui.showEducationHUD(config, this.educationManager.expectedIndex);
       this.ui.checkMobileControls();
 
       if (this._animationFrameId) cancelAnimationFrame(this._animationFrameId);
       this._animationFrameId = requestAnimationFrame(this.gameLoop);
+    },
+
+    startEducationLevelOne() {
+      this.startEducationLevel(1);
+    },
+
+    startNextEducationLevel() {
+      const nextLevel = Number(this.currentEducationLevel) + 1;
+      if (nextLevel <= (window.EDUCATION_LEVELS || []).length) {
+        this.startEducationLevel(nextLevel);
+      } else {
+        this.returnToEducationMenu();
+      }
     },
 
     handleEducationComplete() {
@@ -59,7 +85,9 @@
       this.state = Game.STATE_LEVEL_COMPLETE;
       this.player.disableControl();
       if (window.audioManager) window.audioManager.playVictory();
-      this.ui.showEducationComplete();
+      const config = this.educationManager.config;
+      const hasNext = config.id < (window.EDUCATION_LEVELS || []).length;
+      this.ui.showEducationComplete(config, hasNext);
       this.ui.checkMobileControls();
     },
 
@@ -78,6 +106,25 @@
       if (this.ui.elements.mobileControls) {
         this.ui.elements.mobileControls.classList.remove('education-mode');
       }
+    },
+
+    returnToEducationMenu() {
+      this.state = Game.STATE_MENU;
+      this.timer.pause();
+      if (this._animationFrameId) cancelAnimationFrame(this._animationFrameId);
+      if (this.player) this.player.destroy();
+
+      this.teardownEducationMode();
+      this.mode = 'adventure';
+      this.player = null;
+      this.maze = null;
+      this.itemManager = null;
+      this.enemyManager = null;
+
+      this.ui.hideHUD();
+      this.ui.hideMenu('pause');
+      this.ui.showEducationLevelMenu();
+      this.ui.checkMobileControls();
     },
 
     exitEducationMode() {

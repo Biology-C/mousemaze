@@ -44,6 +44,7 @@ class Game {
     this.pendingScore = null;
     this.mode = 'adventure';
     this.educationManager = null;
+    this.currentEducationLevel = 1;
 
     // 設定計時器回呼更新 UI
     this.timer.onTick = (ms) => {
@@ -484,7 +485,7 @@ class Game {
    */
   restartCurrentLevel() {
     if (this.mode === 'education') {
-      this.startEducationLevelOne();
+      this.startEducationLevel(this.currentEducationLevel);
     } else {
       this.startLevel();
     }

@@ -188,6 +188,61 @@ body {
   background: linear-gradient(180deg, #a569bd, #7d3c98);
 }
 
+.education-level-panel {
+  width: min(680px, 92vw);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.education-level-intro {
+  margin: -4px 0 18px;
+  color: #d6eaf8;
+  font-size: 1.05rem;
+}
+
+.education-level-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.education-level-card {
+  display: flex;
+  min-height: 64px;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 14px;
+  border: 3px solid #6c3483;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #283747, #17202a);
+  color: #fff;
+  font: 1rem 'DotGothic16', sans-serif;
+  text-align: left;
+  cursor: pointer;
+}
+
+.education-level-card:hover,
+.education-level-card:focus-visible {
+  border-color: #f1c40f;
+  background: linear-gradient(180deg, #34495e, #1b2631);
+  transform: translateY(-1px);
+}
+
+.education-level-number {
+  display: inline-flex;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #8e44ad;
+  color: #fff;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
 .btn-back {
   position: absolute;
   top: 15px;
@@ -277,6 +332,34 @@ body {
   font-size: 1.2rem;
 }
 
+.education-reference {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.education-reference-label {
+  color: #aed6f1;
+  font-size: 0.88rem;
+  white-space: nowrap;
+}
+
+.education-sequence-reference .education-number {
+  width: 29px;
+  height: 29px;
+  border-width: 2px;
+  background: #d6eaf8;
+  font-size: 1rem;
+}
+
+.education-sequence-reference .education-number.completed {
+  border-color: #85c1e9;
+  background: #d6eaf8;
+  color: #1b4f72;
+}
+
 .education-sequence {
   display: flex;
   justify-content: center;
@@ -322,6 +405,11 @@ body {
   font-size: 1.1rem;
 }
 
+.education-next.nudge {
+  color: #f8c471;
+  animation: educationNudge 0.28s ease-in-out 2 alternate;
+}
+
 #btn-education-pause {
   position: absolute;
   top: 0;
@@ -353,6 +441,11 @@ body {
 @keyframes educationPulse {
   from { transform: scale(1); }
   to { transform: scale(1.14); }
+}
+
+@keyframes educationNudge {
+  from { transform: translateX(-5px); }
+  to { transform: translateX(5px); }
 }
 
 /* HUD 技能圖示計數（icon + dot 格子）*/
@@ -861,10 +954,31 @@ body {
 
   .education-kicker { font-size: 0.72rem; }
   .education-rule { font-size: 0.9rem; margin-bottom: 4px; }
+  .education-reference { gap: 4px; margin-bottom: 4px; }
+  .education-reference-label { font-size: 0.68rem; }
+  .education-sequence-reference .education-number { width: 23px; height: 23px; font-size: 0.78rem; }
   .education-number { width: 29px; height: 29px; font-size: 1rem; border-width: 2px; }
   .education-arrow { font-size: 0.9rem; }
   .education-next { margin-top: 4px; font-size: 0.9rem; }
   #btn-education-pause { font-size: 0.72rem; }
+
+  .education-level-grid {
+    grid-template-columns: 1fr;
+    gap: 7px;
+  }
+
+  .education-level-card {
+    min-height: 50px;
+    padding: 6px 10px;
+    font-size: 0.9rem;
+  }
+
+  .education-level-number {
+    width: 32px;
+    height: 32px;
+    flex-basis: 32px;
+    font-size: 1rem;
+  }
 }
 
 /* 教學提示元件 */

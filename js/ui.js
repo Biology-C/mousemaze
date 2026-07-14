@@ -16,6 +16,7 @@ class UIManager {
       nameInput: document.getElementById('menu-name-input'),
       settings: document.getElementById('menu-settings'),
       help: document.getElementById('menu-help'),
+      educationLevels: document.getElementById('menu-education-levels'),
       educationComplete: document.getElementById('menu-education-complete'),
     };
 
@@ -95,11 +96,21 @@ class UIManager {
 
       // 教育模式
       educationHud: document.getElementById('education-hud'),
+      educationKicker: document.getElementById('education-kicker'),
+      educationRule: document.getElementById('education-rule'),
+      educationReferenceWrap: document.getElementById('education-reference-wrap'),
+      educationReferenceLabel: document.getElementById('education-reference-label'),
+      educationReferenceSequence: document.getElementById('education-reference-sequence'),
       educationSequence: document.getElementById('education-sequence'),
       educationNext: document.getElementById('education-next'),
       btnEducationPause: document.getElementById('btn-education-pause'),
+      btnEducationLevelsBack: document.getElementById('btn-education-levels-back'),
+      btnEducationNext: document.getElementById('btn-education-next'),
       btnEducationReplay: document.getElementById('btn-education-replay'),
+      btnEducationLevels: document.getElementById('btn-education-levels'),
       btnEducationHome: document.getElementById('btn-education-home'),
+      educationCompleteCopy: document.getElementById('education-complete-copy'),
+      educationCompleteSequence: document.getElementById('education-complete-sequence'),
     };
 
     // 搖框狀態
@@ -155,7 +166,16 @@ class UIManager {
     });
 
     if (this.elements.btnEducation) {
-      this.elements.btnEducation.addEventListener('click', () => this.game.startEducationLevelOne());
+      this.elements.btnEducation.addEventListener('click', () => this.game.openEducationMenu());
+    }
+
+    document.querySelectorAll('[data-education-level]').forEach((button) => {
+      button.addEventListener('click', () => {
+        this.game.startEducationLevel(Number(button.dataset.educationLevel));
+      });
+    });
+    if (this.elements.btnEducationLevelsBack) {
+      this.elements.btnEducationLevelsBack.addEventListener('click', () => this.game.exitEducationMode());
     }
 
     if (this.elements.btnConfirmName) {
@@ -228,7 +248,15 @@ class UIManager {
     this.elements.btnNextLevel.addEventListener('click', () => this.game.startNextLevel());
 
     if (this.elements.btnEducationReplay) {
-      this.elements.btnEducationReplay.addEventListener('click', () => this.game.startEducationLevelOne());
+      this.elements.btnEducationReplay.addEventListener('click', () => {
+        this.game.startEducationLevel(this.game.currentEducationLevel);
+      });
+    }
+    if (this.elements.btnEducationNext) {
+      this.elements.btnEducationNext.addEventListener('click', () => this.game.startNextEducationLevel());
+    }
+    if (this.elements.btnEducationLevels) {
+      this.elements.btnEducationLevels.addEventListener('click', () => this.game.returnToEducationMenu());
     }
     if (this.elements.btnEducationHome) {
       this.elements.btnEducationHome.addEventListener('click', () => this.game.exitEducationMode());
@@ -456,42 +484,155 @@ class UIManager {
     this.hud.container.classList.add('hidden');
   }
 
-  showEducationHUD() {
-    if (!this.elements.educationHud) return;
+  showEducationLevelMenu() {
+    this.hideHUD();
+    this.hideEducationHUD();
+    this.showMenu('educationLevels');
+    setTimeout(() => {
+      const firstLevel = this.menus.educationLevels?.querySelector('[data-education-level]');
+      if (firstLevel) firstLevel.focus();
+    }, 50);
+  }
+
+  showEducationHUD(config, completedCount = 1) {
+    if (!this.elements.educationHud || !config) return;
     this.hideHUD();
     this.elements.educationHud.classList.remove('hidden');
-    this.updateEducationProgress(1, 2);
+    this._renderEducationHeader(config);
+    this.updateEducationProgress(completedCount, config);
   }
 
   hideEducationHUD() {
+    if (this._educationNudgeTimer) {
+      clearTimeout(this._educationNudgeTimer);
+      this._educationNudgeTimer = null;
+    }
     if (this.elements.educationHud) {
       this.elements.educationHud.classList.add('hidden');
     }
   }
 
-  updateEducationProgress(completedValue, nextValue) {
-    if (this.elements.educationSequence) {
-      this.elements.educationSequence.querySelectorAll('.education-number').forEach((chip) => {
-        const value = Number(chip.dataset.value);
-        chip.classList.toggle('completed', value <= completedValue);
-        chip.classList.toggle('current', value === nextValue);
-      });
+  _educationDictionary() {
+    const lang = gameSettings.language || 'zh';
+    return this.I18N[lang] || this.I18N.zh || {};
+  }
+
+  _renderEducationHeader(config) {
+    const dict = this._educationDictionary();
+    if (this.elements.educationKicker) {
+      this.elements.educationKicker.textContent = dict[config.titleKey] || config.titleKey;
+    }
+    if (this.elements.educationRule) {
+      this.elements.educationRule.textContent = dict[config.ruleKey] || config.ruleKey;
     }
 
-    if (this.elements.educationNext) {
-      const lang = gameSettings.language || 'zh';
-      const dict = this.I18N[lang] || this.I18N.zh || {};
-      this.elements.educationNext.textContent = nextValue
-        ? `${dict.edu_next || '下一個：'}${nextValue}`
-        : (dict.edu_all_done || '全部完成！');
+    const hasReference = Array.isArray(config.referenceSequence);
+    if (this.elements.educationReferenceWrap) {
+      this.elements.educationReferenceWrap.classList.toggle('hidden', !hasReference);
+    }
+    if (hasReference && this.elements.educationReferenceLabel) {
+      this.elements.educationReferenceLabel.textContent = dict.edu_reference || '看看這一排：';
+    }
+    if (hasReference && this.elements.educationReferenceSequence) {
+      this._renderEducationSequence(
+        this.elements.educationReferenceSequence,
+        config.referenceSequence,
+        config.referenceSequence,
+        config.referenceSequence.length,
+        false
+      );
     }
   }
 
-  showEducationComplete() {
+  _renderEducationSequence(container, actualValues, displayValues, completedCount, showCurrent = true) {
+    if (!container) return;
+    container.innerHTML = '';
+
+    actualValues.forEach((value, index) => {
+      if (index > 0) {
+        const arrow = document.createElement('span');
+        arrow.className = 'education-arrow';
+        arrow.textContent = '→';
+        arrow.setAttribute('aria-hidden', 'true');
+        container.appendChild(arrow);
+      }
+
+      const chip = document.createElement('span');
+      chip.className = 'education-number';
+      const isCompleted = index < completedCount;
+      const displayedValue = isCompleted ? value : displayValues[index];
+      chip.textContent = displayedValue === null ? '?' : String(displayedValue);
+      chip.dataset.index = String(index);
+      chip.classList.toggle('completed', isCompleted);
+      chip.classList.toggle('current', showCurrent && index === completedCount);
+      container.appendChild(chip);
+    });
+  }
+
+  updateEducationProgress(completedCount, config) {
+    if (!config) return;
+    if (this._educationNudgeTimer) {
+      clearTimeout(this._educationNudgeTimer);
+      this._educationNudgeTimer = null;
+    }
+
+    this._renderEducationSequence(
+      this.elements.educationSequence,
+      config.sequence,
+      config.displaySequence,
+      completedCount
+    );
+
+    if (!this.elements.educationNext) return;
+    const dict = this._educationDictionary();
+    this.elements.educationNext.classList.remove('nudge');
+    if (completedCount >= config.sequence.length) {
+      this.elements.educationNext.textContent = dict.edu_all_done || '全部完成！';
+      return;
+    }
+
+    const nextIsHidden = config.displaySequence[completedCount] === null;
+    this.elements.educationNext.textContent = nextIsHidden
+      ? (dict.edu_find_missing || '想一想：下一個數字是？')
+      : `${dict.edu_next || '下一個：'}${config.sequence[completedCount]}`;
+  }
+
+  showEducationNudge(config) {
+    if (!config || !this.elements.educationNext) return;
+    if (this._educationNudgeTimer) clearTimeout(this._educationNudgeTimer);
+
+    const dict = this._educationDictionary();
+    this.elements.educationNext.textContent = dict[config.nudgeKey] || dict.edu_try_again || '再想一想。';
+    this.elements.educationNext.classList.remove('nudge');
+    void this.elements.educationNext.offsetWidth;
+    this.elements.educationNext.classList.add('nudge');
+
+    this._educationNudgeTimer = setTimeout(() => {
+      this._educationNudgeTimer = null;
+      const manager = this.game.educationManager;
+      if (this.game.mode === 'education' && manager && manager.config.id === config.id) {
+        this.updateEducationProgress(manager.expectedIndex, config);
+      }
+    }, 1600);
+  }
+
+  showEducationComplete(config, hasNext) {
+    if (!config) return;
+    const dict = this._educationDictionary();
     this.hideEducationHUD();
+    if (this.elements.educationCompleteCopy) {
+      this.elements.educationCompleteCopy.textContent = dict[config.completeKey] || dict.edu_complete_copy;
+    }
+    if (this.elements.educationCompleteSequence) {
+      this.elements.educationCompleteSequence.textContent = config.sequence.join(' → ');
+    }
+    if (this.elements.btnEducationNext) {
+      this.elements.btnEducationNext.classList.toggle('hidden', !hasNext);
+    }
     this.showMenu('educationComplete');
     setTimeout(() => {
-      if (this.elements.btnEducationReplay) this.elements.btnEducationReplay.focus();
+      const target = hasNext ? this.elements.btnEducationNext : this.elements.btnEducationReplay;
+      if (target) target.focus();
     }, 50);
   }
 
@@ -898,6 +1039,20 @@ class UIManager {
     if (this.elements.btnEducationPause) {
       const label = dict.pause || '暫停';
       this.elements.btnEducationPause.innerHTML = `<span data-i18n="pause">${label}</span> (ESC)`;
+    }
+
+    const educationManager = this.game.educationManager;
+    if (this.game.mode === 'education' && educationManager) {
+      this._renderEducationHeader(educationManager.config);
+      this.updateEducationProgress(educationManager.expectedIndex, educationManager.config);
+      if (educationManager.completed) {
+        if (this.elements.educationCompleteCopy) {
+          this.elements.educationCompleteCopy.textContent = dict[educationManager.config.completeKey] || dict.edu_complete_copy;
+        }
+        if (this.elements.educationCompleteSequence) {
+          this.elements.educationCompleteSequence.textContent = educationManager.config.sequence.join(' → ');
+        }
+      }
     }
   }
 

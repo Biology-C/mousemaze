@@ -36,19 +36,13 @@
     <!-- 教育模式 HUD -->
     <div id="education-hud" class="hidden">
       <div class="education-hud-card">
-        <div class="education-kicker" data-i18n="edu_level_one">🧩 小小探險家 · 第 1 關</div>
-        <div class="education-rule" data-i18n="edu_rule_plus_one">照順序找到數字</div>
-        <div id="education-sequence" class="education-sequence" aria-label="1 到 5 的數字順序">
-          <span class="education-number" data-value="1">1</span>
-          <span class="education-arrow">→</span>
-          <span class="education-number" data-value="2">2</span>
-          <span class="education-arrow">→</span>
-          <span class="education-number" data-value="3">3</span>
-          <span class="education-arrow">→</span>
-          <span class="education-number" data-value="4">4</span>
-          <span class="education-arrow">→</span>
-          <span class="education-number" data-value="5">5</span>
+        <div id="education-kicker" class="education-kicker">🧩 小小探險家 · 第 1 關</div>
+        <div id="education-rule" class="education-rule">先照順序走：每次多 1</div>
+        <div id="education-reference-wrap" class="education-reference hidden">
+          <span id="education-reference-label" class="education-reference-label">看看這一排：</span>
+          <div id="education-reference-sequence" class="education-sequence education-sequence-reference"></div>
         </div>
+        <div id="education-sequence" class="education-sequence" aria-label="數字規律"></div>
         <div id="education-next" class="education-next" aria-live="polite">下一個：2</div>
       </div>
       <button id="btn-education-pause" class="btn-small"><span data-i18n="pause">暫停</span> (ESC)</button>
@@ -133,14 +127,35 @@
       </div>
     </div>
 
+    <!-- 教育關卡選單 -->
+    <div id="menu-education-levels" class="overlay hidden">
+      <div class="panel education-level-panel">
+        <h2 class="subtitle" data-i18n="edu_levels_title">🧩 小小探險家</h2>
+        <p class="education-level-intro" data-i18n="edu_levels_intro">選一條數字迷宮，慢慢找出規律。</p>
+        <div class="education-level-grid">
+          <button class="education-level-card" data-education-level="1"><span class="education-level-number">1</span><span data-i18n="edu_l1_name">一步一步數</span></button>
+          <button class="education-level-card" data-education-level="2"><span class="education-level-number">2</span><span data-i18n="edu_l2_name">每次多 2</span></button>
+          <button class="education-level-card" data-education-level="3"><span class="education-level-number">3</span><span data-i18n="edu_l3_name">找最後一格</span></button>
+          <button class="education-level-card" data-education-level="4"><span class="education-level-number">4</span><span data-i18n="edu_l4_name">找中間一格</span></button>
+          <button class="education-level-card" data-education-level="5"><span class="education-level-number">5</span><span data-i18n="edu_l5_name">找兩個空格</span></button>
+          <button class="education-level-card" data-education-level="6"><span class="education-level-number">6</span><span data-i18n="edu_l6_name">奇數與偶數</span></button>
+          <button class="education-level-card" data-education-level="7"><span class="education-level-number">7</span><span data-i18n="edu_l7_name">每次多 5</span></button>
+          <button class="education-level-card" data-education-level="8"><span class="education-level-number">8</span><span data-i18n="edu_l8_name">多 5 挑戰</span></button>
+        </div>
+        <button id="btn-education-levels-back" class="btn btn-danger" data-i18n="edu_home">回主選單</button>
+      </div>
+    </div>
+
     <!-- 教育模式完成視窗 -->
     <div id="menu-education-complete" class="overlay hidden">
       <div class="panel education-complete-panel">
         <div class="education-celebration" aria-hidden="true">🎉 🐭 🧀</div>
         <h2 class="subtitle" data-i18n="edu_complete_title">太棒了！</h2>
-        <p class="education-complete-copy" data-i18n="edu_complete_copy">你照順序找到了所有數字</p>
-        <div class="education-complete-sequence">1 → 2 → 3 → 4 → 5</div>
+        <p id="education-complete-copy" class="education-complete-copy">你找到了完整的數字規律！</p>
+        <div id="education-complete-sequence" class="education-complete-sequence">1 → 2 → 3 → 4 → 5</div>
+        <button id="btn-education-next" class="btn btn-education" data-i18n="edu_next_level">下一關</button>
         <button id="btn-education-replay" class="btn btn-education" data-i18n="edu_replay">再玩一次</button>
+        <button id="btn-education-levels" class="btn" data-i18n="edu_choose_level">選擇關卡</button>
         <button id="btn-education-home" class="btn" data-i18n="edu_home">回主選單</button>
       </div>
     </div>
@@ -267,6 +282,7 @@
   <script src="js/enemy.js"></script>
   <script src="js/player.js"></script>
   <script src="js/renderer.js"></script>
+  <script src="js/education_content.js"></script>
   <script src="js/education.js"></script>
   <script src="js/ui_content.js"></script>
   <script src="js/ui.js"></script>
