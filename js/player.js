@@ -74,6 +74,7 @@ class Player {
     };
     
     this.onStatsChanged = null;
+    this.educationMode = false;
 
     this._handleKeyDown = this._onKeyDown.bind(this);
     this._handleKeyUp = this._onKeyUp.bind(this);
@@ -117,6 +118,9 @@ class Player {
       }
     }
     
+    // 教育模式只保留移動，避免誤觸鑽牆、攻擊、燈塔或提示。
+    if (this.educationMode) return;
+
     // 單次按下觸發的技能
     // Q : 放燈塔記號（面向方向下一格）
     if ((e.key === 'q' || e.key === 'Q') && !this.isMoving) {

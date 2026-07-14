@@ -28,6 +28,10 @@
     },
 
     quitToMenu(saveCurrent = true) {
+      if (this.mode === 'education') {
+        this.exitEducationMode();
+        return;
+      }
       this.state = Game.STATE_MENU;
       this.timer.pause();
       if (this._animationFrameId) cancelAnimationFrame(this._animationFrameId);

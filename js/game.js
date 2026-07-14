@@ -42,6 +42,8 @@ class Game {
     // 紀錄上一次輸入的姓名
     this.lastPlayerName = Storage.loadPlayerName() || '';
     this.pendingScore = null;
+    this.mode = 'adventure';
+    this.educationManager = null;
 
     // 設定計時器回呼更新 UI
     this.timer.onTick = (ms) => {
@@ -194,6 +196,11 @@ class Game {
    * 初始化並進入這關
    */
   startLevel() {
+    if (this.mode === 'education' && typeof this.teardownEducationMode === 'function') {
+      this.teardownEducationMode();
+    }
+    this.mode = 'adventure';
+    this.educationManager = null;
     this.state = Game.STATE_PLAYING;
     this.pendingScore = null;
     this.ui.hideAllMenus();
@@ -366,7 +373,7 @@ class Game {
     // 更新 HUD
 
     // 渲染畫面
-    this.renderer.render(this.maze, this.player, this.itemManager, this.enemyManager);
+    this.renderer.render(this.maze, this.player, this.itemManager, this.enemyManager, this.educationManager);
 
     // GM HUD
     if (this.isGM) {
@@ -378,8 +385,13 @@ class Game {
       this.renderer.drawMinimap(this.ui.gmMinimapCtx, this.maze, this.player, this.itemManager);
     }
 
-    // 檢查是否過關
-    if (this.player.checkWin()) {
+    // 教育模式使用自己的數字順序完成條件。
+    if (this.mode === 'education' && this.educationManager) {
+      this.educationManager.update(this.player);
+      if (this.educationManager.completed) {
+        this.handleEducationComplete();
+      }
+    } else if (this.player.checkWin()) {
       this.handleLevelComplete();
     }
 
@@ -411,7 +423,7 @@ class Game {
       this.ui.showMenu('pause');
     } else if (this.state === Game.STATE_PAUSED) {
       this.state = Game.STATE_PLAYING;
-      this.timer.start();
+      if (this.mode !== 'education') this.timer.start();
       this.ui.hideMenu('pause');
       this.ui.checkMobileControls();
     }
@@ -471,7 +483,11 @@ class Game {
    * 重新開始本關
    */
   restartCurrentLevel() {
-    this.startLevel();
+    if (this.mode === 'education') {
+      this.startEducationLevelOne();
+    } else {
+      this.startLevel();
+    }
   }
 
   /**

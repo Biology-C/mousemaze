@@ -16,6 +16,7 @@ class UIManager {
       nameInput: document.getElementById('menu-name-input'),
       settings: document.getElementById('menu-settings'),
       help: document.getElementById('menu-help'),
+      educationComplete: document.getElementById('menu-education-complete'),
     };
 
     // HUD
@@ -47,6 +48,7 @@ class UIManager {
       completeTitle: document.getElementById('complete-title'),
       completeTutorialTitle: document.getElementById('complete-tutorial-title'),
       btnStart: document.getElementById('btn-start'),
+      btnEducation: document.getElementById('btn-education'),
       btnContinue: document.getElementById('btn-continue'),
       btnNextLevel: document.getElementById('btn-next-level'),
       
@@ -90,6 +92,14 @@ class UIManager {
       settingBgm: document.getElementById('setting-bgm'),
       settingSfx: document.getElementById('setting-sfx'),
       settingShowMs: document.getElementById('setting-show-ms'),
+
+      // 教育模式
+      educationHud: document.getElementById('education-hud'),
+      educationSequence: document.getElementById('education-sequence'),
+      educationNext: document.getElementById('education-next'),
+      btnEducationPause: document.getElementById('btn-education-pause'),
+      btnEducationReplay: document.getElementById('btn-education-replay'),
+      btnEducationHome: document.getElementById('btn-education-home'),
     };
 
     // 搖框狀態
@@ -115,8 +125,10 @@ class UIManager {
       if (this.game.state === Game.STATE_PLAYING && window.innerWidth <= 768 && window.innerHeight > window.innerWidth) {
         this.elements.mobileControls.classList.add('active');
         this.elements.mobileControls.classList.remove('hidden');
-        // 燈塔按鈕：第 3 關（含）以後才顯示
-        const isBeaconLevel = this.game.currentLevel >= 3;
+        const isEducationMode = this.game.mode === 'education';
+        this.elements.mobileControls.classList.toggle('education-mode', isEducationMode);
+        // 燈塔按鈕：冒險模式第 3 關（含）以後才顯示
+        const isBeaconLevel = !isEducationMode && this.game.currentLevel >= 3;
         if (this.elements.btnSkillMark) {
           if (isBeaconLevel) {
             this.elements.btnSkillMark.classList.remove('hidden');
@@ -127,6 +139,7 @@ class UIManager {
       } else {
         this.elements.mobileControls.classList.remove('active');
         this.elements.mobileControls.classList.add('hidden');
+        this.elements.mobileControls.classList.remove('education-mode');
       }
     }
   }
@@ -140,6 +153,10 @@ class UIManager {
         setTimeout(() => this.elements.inputNewPlayerName.focus(), 50);
       }
     });
+
+    if (this.elements.btnEducation) {
+      this.elements.btnEducation.addEventListener('click', () => this.game.startEducationLevelOne());
+    }
 
     if (this.elements.btnConfirmName) {
       this.elements.btnConfirmName.addEventListener('click', () => {
@@ -168,6 +185,9 @@ class UIManager {
 
     // 暫停選單
     this.hud.btnPause.addEventListener('click', () => this.game.togglePause());
+    if (this.elements.btnEducationPause) {
+      this.elements.btnEducationPause.addEventListener('click', () => this.game.togglePause());
+    }
     document.getElementById('btn-resume').addEventListener('click', () => this.game.togglePause());
     document.getElementById('btn-restart-level').addEventListener('click', () => this.game.restartCurrentLevel());
     document.getElementById('btn-quit').addEventListener('click', () => this.game.quitToMenu());
@@ -206,6 +226,13 @@ class UIManager {
     // 過關選單
     document.getElementById('btn-rest').addEventListener('click', () => this.game.restAndSave());
     this.elements.btnNextLevel.addEventListener('click', () => this.game.startNextLevel());
+
+    if (this.elements.btnEducationReplay) {
+      this.elements.btnEducationReplay.addEventListener('click', () => this.game.startEducationLevelOne());
+    }
+    if (this.elements.btnEducationHome) {
+      this.elements.btnEducationHome.addEventListener('click', () => this.game.exitEducationMode());
+    }
 
     // 輸入名稱
     document.getElementById('btn-submit-name').addEventListener('click', () => {
@@ -427,6 +454,45 @@ class UIManager {
 
   hideHUD() {
     this.hud.container.classList.add('hidden');
+  }
+
+  showEducationHUD() {
+    if (!this.elements.educationHud) return;
+    this.hideHUD();
+    this.elements.educationHud.classList.remove('hidden');
+    this.updateEducationProgress(1, 2);
+  }
+
+  hideEducationHUD() {
+    if (this.elements.educationHud) {
+      this.elements.educationHud.classList.add('hidden');
+    }
+  }
+
+  updateEducationProgress(completedValue, nextValue) {
+    if (this.elements.educationSequence) {
+      this.elements.educationSequence.querySelectorAll('.education-number').forEach((chip) => {
+        const value = Number(chip.dataset.value);
+        chip.classList.toggle('completed', value <= completedValue);
+        chip.classList.toggle('current', value === nextValue);
+      });
+    }
+
+    if (this.elements.educationNext) {
+      const lang = gameSettings.language || 'zh';
+      const dict = this.I18N[lang] || this.I18N.zh || {};
+      this.elements.educationNext.textContent = nextValue
+        ? `${dict.edu_next || '下一個：'}${nextValue}`
+        : (dict.edu_all_done || '全部完成！');
+    }
+  }
+
+  showEducationComplete() {
+    this.hideEducationHUD();
+    this.showMenu('educationComplete');
+    setTimeout(() => {
+      if (this.elements.btnEducationReplay) this.elements.btnEducationReplay.focus();
+    }, 50);
   }
 
   updateHUD(level, msTime) {
@@ -828,6 +894,10 @@ class UIManager {
     if (this.hud.btnPause) {
       const label = dict.pause || '暫停';
       this.hud.btnPause.innerHTML = `<span data-i18n="pause">${label}</span> (ESC)`;
+    }
+    if (this.elements.btnEducationPause) {
+      const label = dict.pause || '暫停';
+      this.elements.btnEducationPause.innerHTML = `<span data-i18n="pause">${label}</span> (ESC)`;
     }
   }
 

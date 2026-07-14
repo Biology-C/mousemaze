@@ -59,7 +59,12 @@ class Renderer {
     this.fogCtx.imageSmoothingEnabled = true;
   }
 
-  updateCamera(player) {
+  updateCamera(player, maze, educationManager = null) {
+    if (educationManager && maze) {
+      this.camera.x = maze.width * this.cellSize / 2 - this.camera.width / 2;
+      this.camera.y = maze.height * this.cellSize / 2 - this.camera.height / 2;
+      return;
+    }
     const targetCamX = player.pixelX - this.camera.width / 2 + this.cellSize / 2;
     const targetCamY = player.pixelY - this.camera.height / 2 + this.cellSize / 2;
     this.camera.x = targetCamX;
@@ -73,10 +78,10 @@ class Renderer {
    * @param {ItemManager} itemManager
    * @param {EnemyManager} enemyManager
    */
-  render(maze, player, itemManager, enemyManager) {
+  render(maze, player, itemManager, enemyManager, educationManager = null) {
     if (!maze || !player) return;
 
-    this.updateCamera(player);
+    this.updateCamera(player, maze, educationManager);
 
     this.ctx.fillStyle = this.colors.bg;
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
@@ -137,6 +142,10 @@ class Renderer {
     // 起點與終點
     this._drawSpecialCell(maze.start.x, maze.start.y, this.colors.start);
     this._drawSpecialCell(maze.end.x, maze.end.y, this.colors.end);
+
+    if (educationManager) {
+      educationManager.draw(this.ctx, this.cellSize, this.wallThickness);
+    }
 
     // 牆壁
     for (let x = startObjCol; x < endObjCol; x++) {

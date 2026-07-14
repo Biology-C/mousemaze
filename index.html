@@ -33,6 +33,27 @@
       <button id="btn-pause" class="btn-small"><span data-i18n="pause">暫停</span> (ESC)</button>
     </div>
 
+    <!-- 教育模式 HUD -->
+    <div id="education-hud" class="hidden">
+      <div class="education-hud-card">
+        <div class="education-kicker" data-i18n="edu_level_one">🧩 小小探險家 · 第 1 關</div>
+        <div class="education-rule" data-i18n="edu_rule_plus_one">照順序找到數字</div>
+        <div id="education-sequence" class="education-sequence" aria-label="1 到 5 的數字順序">
+          <span class="education-number" data-value="1">1</span>
+          <span class="education-arrow">→</span>
+          <span class="education-number" data-value="2">2</span>
+          <span class="education-arrow">→</span>
+          <span class="education-number" data-value="3">3</span>
+          <span class="education-arrow">→</span>
+          <span class="education-number" data-value="4">4</span>
+          <span class="education-arrow">→</span>
+          <span class="education-number" data-value="5">5</span>
+        </div>
+        <div id="education-next" class="education-next" aria-live="polite">下一個：2</div>
+      </div>
+      <button id="btn-education-pause" class="btn-small"><span data-i18n="pause">暫停</span> (ESC)</button>
+    </div>
+
     <!-- GM HUD -->
     <div id="gm-hud" class="hidden">
       <h3>GM 控制台</h3>
@@ -63,6 +84,7 @@
       <div class="panel">
         <h1 class="title">Bio-Logic<br>Mouse Co.</h1>
         <button id="btn-start" class="btn" data-i18n="start">開始新遊戲</button>
+        <button id="btn-education" class="btn btn-education" data-i18n="education_start">🧩 小小探險家</button>
         <button id="btn-continue" class="btn hidden" data-i18n="continue">繼續遊戲</button>
         <button id="btn-leaderboard" class="btn" data-i18n="leaderboard">排行榜</button>
         <button id="btn-settings" class="btn" data-i18n="settings">設定</button>
@@ -108,6 +130,18 @@
         </div>
         <button id="btn-next-level" class="btn" data-i18n="next_level">進入下一關</button>
         <button id="btn-rest" class="btn" data-i18n="rest">休息結算 (存檔)</button>
+      </div>
+    </div>
+
+    <!-- 教育模式完成視窗 -->
+    <div id="menu-education-complete" class="overlay hidden">
+      <div class="panel education-complete-panel">
+        <div class="education-celebration" aria-hidden="true">🎉 🐭 🧀</div>
+        <h2 class="subtitle" data-i18n="edu_complete_title">太棒了！</h2>
+        <p class="education-complete-copy" data-i18n="edu_complete_copy">你照順序找到了所有數字</p>
+        <div class="education-complete-sequence">1 → 2 → 3 → 4 → 5</div>
+        <button id="btn-education-replay" class="btn btn-education" data-i18n="edu_replay">再玩一次</button>
+        <button id="btn-education-home" class="btn" data-i18n="edu_home">回主選單</button>
       </div>
     </div>
 
@@ -233,10 +267,12 @@
   <script src="js/enemy.js"></script>
   <script src="js/player.js"></script>
   <script src="js/renderer.js"></script>
+  <script src="js/education.js"></script>
   <script src="js/ui_content.js"></script>
   <script src="js/ui.js"></script>
   <script src="js/game_content.js"></script>
   <script src="js/game.js"></script>
+  <script src="js/game_education.js"></script>
   <script src="js/game_progress.js"></script>
   <script src="js/main.js"></script>
 </body>

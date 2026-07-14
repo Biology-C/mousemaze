@@ -178,6 +178,16 @@ body {
   background-color: #d64736;
 }
 
+.btn-education {
+  background: linear-gradient(180deg, #8e44ad, #6c3483);
+  border-color: #512e5f;
+  color: #fff;
+}
+
+.btn-education:hover {
+  background: linear-gradient(180deg, #a569bd, #7d3c98);
+}
+
 .btn-back {
   position: absolute;
   top: 15px;
@@ -231,6 +241,118 @@ body {
 
 #btn-pause {
   pointer-events: auto; /* 恢復按鈕的點擊 */
+}
+
+/* 教育模式：大字、圖像化、無計時壓力 */
+#education-hud {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  right: 16px;
+  z-index: 6;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  pointer-events: none;
+}
+
+.education-hud-card {
+  min-width: min(520px, 76vw);
+  padding: 10px 18px 12px;
+  border: 3px solid #f1c40f;
+  border-radius: 18px;
+  background: rgba(24, 32, 42, 0.94);
+  box-shadow: 0 5px 0 rgba(0, 0, 0, 0.28);
+  color: #fff;
+  text-align: center;
+}
+
+.education-kicker {
+  color: #f8c471;
+  font-size: 0.95rem;
+}
+
+.education-rule {
+  margin: 2px 0 7px;
+  font-size: 1.2rem;
+}
+
+.education-sequence {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+}
+
+.education-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border: 3px solid #85929e;
+  border-radius: 50%;
+  background: #ecf0f1;
+  color: #2c3e50;
+  font-size: 1.35rem;
+  font-weight: bold;
+  transition: transform 0.2s, background 0.2s, border-color 0.2s;
+}
+
+.education-number.completed {
+  background: #2ecc71;
+  border-color: #a9dfbf;
+  color: #17202a;
+}
+
+.education-number.current {
+  background: #f1c40f;
+  border-color: #fff;
+  animation: educationPulse 0.9s ease-in-out infinite alternate;
+}
+
+.education-arrow {
+  color: #f8c471;
+  font-size: 1.25rem;
+}
+
+.education-next {
+  margin-top: 7px;
+  color: #fff;
+  font-size: 1.1rem;
+}
+
+#btn-education-pause {
+  position: absolute;
+  top: 0;
+  right: 0;
+  pointer-events: auto;
+}
+
+.education-complete-panel {
+  max-width: 520px;
+}
+
+.education-celebration {
+  margin-bottom: 12px;
+  font-size: 3rem;
+}
+
+.education-complete-copy {
+  margin-bottom: 12px;
+  font-size: 1.25rem;
+}
+
+.education-complete-sequence {
+  margin: 12px 0 24px;
+  color: #f1c40f;
+  font-size: 1.7rem;
+  font-weight: bold;
+}
+
+@keyframes educationPulse {
+  from { transform: scale(1); }
+  to { transform: scale(1.14); }
 }
 
 /* HUD 技能圖示計數（icon + dot 格子）*/
@@ -719,6 +841,30 @@ body {
   .action-btn.hint     { right: 90px;  left: auto; bottom: 10px; }
   .action-btn.mark     { right: 164px; left: auto; bottom: 10px; }
   .action-btn.settings { display: none; } /* settings button is hidden on mobile */
+
+  #mobile-controls.education-mode .action-btn {
+    display: none !important;
+  }
+
+  #education-hud {
+    top: 8px;
+    left: 8px;
+    right: 8px;
+    justify-content: flex-start;
+  }
+
+  .education-hud-card {
+    min-width: 0;
+    width: calc(100% - 76px);
+    padding: 7px 8px 8px;
+  }
+
+  .education-kicker { font-size: 0.72rem; }
+  .education-rule { font-size: 0.9rem; margin-bottom: 4px; }
+  .education-number { width: 29px; height: 29px; font-size: 1rem; border-width: 2px; }
+  .education-arrow { font-size: 0.9rem; }
+  .education-next { margin-top: 4px; font-size: 0.9rem; }
+  #btn-education-pause { font-size: 0.72rem; }
 }
 
 /* 教學提示元件 */
