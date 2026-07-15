@@ -75,6 +75,8 @@ class Player {
     
     this.onStatsChanged = null;
     this.educationMode = false;
+    // 教育模式的手機搖桿使用單步指令，避免長按時連續跨過多格。
+    this.pendingEducationStep = null;
 
     this._handleKeyDown = this._onKeyDown.bind(this);
     this._handleKeyUp = this._onKeyUp.bind(this);
@@ -108,6 +110,7 @@ class Player {
     window.removeEventListener('keydown', this._handleKeyDown);
     window.removeEventListener('keyup', this._handleKeyUp);
     for (let k in this.keys) this.keys[k] = false;
+    this.pendingEducationStep = null;
   }
 
   _onKeyDown(e) {
@@ -157,6 +160,11 @@ class Player {
 
   setKeyUp(key) {
     this._onKeyUp({ key: key });
+  }
+
+  queueEducationStep(key) {
+    if (!this.educationMode || !['ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowLeft'].includes(key)) return;
+    this.pendingEducationStep = key;
   }
 
   useHint() {
@@ -283,11 +291,13 @@ class Player {
       const currCell = this.maze.getCell(this.x, this.y);
       const isInverse = currCell && currCell.type === 'inverse';
 
-      // 輸入映射
-      let inputUp = this.keys.ArrowUp || this.keys.w;
-      let inputRight = this.keys.ArrowRight || this.keys.d;
-      let inputDown = this.keys.ArrowDown || this.keys.s;
-      let inputLeft = this.keys.ArrowLeft || this.keys.a;
+      // 教育模式的手機單步指令只消耗一次；鍵盤仍維持原本的按住移動。
+      const educationStep = this.educationMode ? this.pendingEducationStep : null;
+      if (educationStep) this.pendingEducationStep = null;
+      let inputUp = educationStep ? educationStep === 'ArrowUp' : (this.keys.ArrowUp || this.keys.w);
+      let inputRight = educationStep ? educationStep === 'ArrowRight' : (this.keys.ArrowRight || this.keys.d);
+      let inputDown = educationStep ? educationStep === 'ArrowDown' : (this.keys.ArrowDown || this.keys.s);
+      let inputLeft = educationStep ? educationStep === 'ArrowLeft' : (this.keys.ArrowLeft || this.keys.a);
 
       if (isInverse) {
         // 反轉方向
