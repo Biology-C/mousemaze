@@ -97,13 +97,17 @@ class UIManager {
       // 教育模式
       educationHud: document.getElementById('education-hud'),
       educationKicker: document.getElementById('education-kicker'),
+      educationClueCard: document.getElementById('education-clue-card'),
       educationRule: document.getElementById('education-rule'),
       educationReferenceWrap: document.getElementById('education-reference-wrap'),
       educationReferenceLabel: document.getElementById('education-reference-label'),
       educationReferenceSequence: document.getElementById('education-reference-sequence'),
       educationSequence: document.getElementById('education-sequence'),
+      educationPlaceValue: document.getElementById('education-place-value'),
       educationNext: document.getElementById('education-next'),
+      educationLevelGrid: document.getElementById('education-level-grid'),
       btnEducationPause: document.getElementById('btn-education-pause'),
+      btnEducationSpeak: document.getElementById('btn-education-speak'),
       btnEducationLevelsBack: document.getElementById('btn-education-levels-back'),
       btnEducationNext: document.getElementById('btn-education-next'),
       btnEducationReplay: document.getElementById('btn-education-replay'),
@@ -111,12 +115,14 @@ class UIManager {
       btnEducationHome: document.getElementById('btn-education-home'),
       educationCompleteCopy: document.getElementById('education-complete-copy'),
       educationCompleteSequence: document.getElementById('education-complete-sequence'),
+      educationAchievement: document.getElementById('education-achievement'),
     };
 
     // 搖框狀態
     this._joystickActive = false;
     this._joystickTouchId = null;
     this._lastJoystickDir = null;
+    this._joystickStepLocked = false;
 
     this.currentLbLevel = 1;
     this.currentLbTab = 'level'; // 'level' 或 'time'
@@ -124,6 +130,7 @@ class UIManager {
     this.HINT_TEXTS = window.UI_HINT_TEXTS || {};
     this.I18N = window.UI_I18N || {};
 
+    this._buildEducationLevelMenu();
     this.bindEvents();
     this.checkContinueBtn();
 
@@ -169,11 +176,12 @@ class UIManager {
       this.elements.btnEducation.addEventListener('click', () => this.game.openEducationMenu());
     }
 
-    document.querySelectorAll('[data-education-level]').forEach((button) => {
-      button.addEventListener('click', () => {
-        this.game.startEducationLevel(Number(button.dataset.educationLevel));
+    if (this.elements.educationLevelGrid) {
+      this.elements.educationLevelGrid.addEventListener('click', (event) => {
+        const button = event.target.closest('[data-education-level]');
+        if (button) this.game.startEducationLevel(Number(button.dataset.educationLevel));
       });
-    });
+    }
     if (this.elements.btnEducationLevelsBack) {
       this.elements.btnEducationLevelsBack.addEventListener('click', () => this.game.exitEducationMode());
     }
@@ -207,6 +215,9 @@ class UIManager {
     this.hud.btnPause.addEventListener('click', () => this.game.togglePause());
     if (this.elements.btnEducationPause) {
       this.elements.btnEducationPause.addEventListener('click', () => this.game.togglePause());
+    }
+    if (this.elements.btnEducationSpeak) {
+      this.elements.btnEducationSpeak.addEventListener('click', () => this.speakEducationClue());
     }
     document.getElementById('btn-resume').addEventListener('click', () => this.game.togglePause());
     document.getElementById('btn-restart-level').addEventListener('click', () => this.game.restartCurrentLevel());
@@ -335,32 +346,38 @@ class UIManager {
     const knob = this.elements.joystickKnob;
     if (!zone || !base || !knob) return;
 
-    const baseRadius = 60;  // 120px 搖桿 half
-    const knobRadius = 22;  // knob 半徑 (~37% 的 60px)
-    const maxDist = baseRadius - knobRadius;
-    const deadZone = 14;
-
-    const getBaseCenter = () => {
+    const getMetrics = () => {
       const rect = base.getBoundingClientRect();
-      return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+      const knobRect = knob.getBoundingClientRect();
+      const baseRadius = rect.width / 2;
+      const knobRadius = (knobRect.width || rect.width * 0.4) / 2;
+      return {
+        centerX: rect.left + baseRadius,
+        centerY: rect.top + rect.height / 2,
+        baseRadius,
+        knobRadius,
+        maxDist: Math.max(1, baseRadius - knobRadius),
+        deadZone: Math.max(20, baseRadius * 0.32)
+      };
     };
 
     const handleMove = (clientX, clientY) => {
-      const center = getBaseCenter();
-      let dx = clientX - center.x;
-      let dy = clientY - center.y;
+      const metrics = getMetrics();
+      let dx = clientX - metrics.centerX;
+      let dy = clientY - metrics.centerY;
       const dist = Math.sqrt(dx * dx + dy * dy);
 
-      if (dist > maxDist) {
-        dx = (dx / dist) * maxDist;
-        dy = (dy / dist) * maxDist;
+      if (dist > metrics.maxDist) {
+        dx = (dx / dist) * metrics.maxDist;
+        dy = (dy / dist) * metrics.maxDist;
       }
 
-      knob.style.left = (baseRadius + dx - knobRadius) + 'px';
-      knob.style.top = (baseRadius + dy - knobRadius) + 'px';
+      knob.style.left = (metrics.baseRadius + dx - metrics.knobRadius) + 'px';
+      knob.style.top = (metrics.baseRadius + dy - metrics.knobRadius) + 'px';
 
-      if (dist < deadZone) {
+      if (dist < metrics.deadZone) {
         this._releaseJoystickDir();
+        this._joystickStepLocked = false;
         return;
       }
 
@@ -371,7 +388,22 @@ class UIManager {
       else if (angle >= -135 && angle < -45) newDir = 'ArrowUp';
       else newDir = 'ArrowLeft';
 
-      if (newDir !== this._lastJoystickDir) {
+      const isEducationMode = this.game.mode === 'education';
+      if (isEducationMode) {
+        if (this._joystickStepLocked) return;
+        this._releaseJoystickDir();
+        const player = this.game.player;
+        if (player) {
+          if (typeof player.queueEducationStep === 'function') {
+            player.queueEducationStep(newDir);
+          } else {
+            // 保留給舊版 Player 的相容路徑。
+            player.setKeyDown(newDir);
+            setTimeout(() => player.setKeyUp(newDir), 80);
+          }
+          this._joystickStepLocked = true;
+        }
+      } else if (newDir !== this._lastJoystickDir) {
         this._releaseJoystickDir();
         this._lastJoystickDir = newDir;
         if (this.game.player) this.game.player.setKeyDown(newDir);
@@ -381,9 +413,11 @@ class UIManager {
     const handleEnd = () => {
       this._joystickActive = false;
       this._joystickTouchId = null;
-      knob.style.left = (baseRadius - knobRadius) + 'px';
-      knob.style.top  = (baseRadius - knobRadius) + 'px';
+      const metrics = getMetrics();
+      knob.style.left = (metrics.baseRadius - metrics.knobRadius) + 'px';
+      knob.style.top  = (metrics.baseRadius - metrics.knobRadius) + 'px';
       this._releaseJoystickDir();
+      this._joystickStepLocked = false;
     };
 
     zone.addEventListener('touchstart', (e) => {
@@ -455,6 +489,47 @@ class UIManager {
     el.addEventListener('mouseleave', triggerUp);
   }
 
+  _buildEducationLevelMenu() {
+    const grid = this.elements?.educationLevelGrid;
+    if (!grid) return;
+
+    const dict = this._educationDictionary();
+    const levels = window.EDUCATION_LEVELS || [];
+    const completed = typeof this.game.getCompletedEducationLevels === 'function'
+      ? this.game.getCompletedEducationLevels()
+      : new Set();
+    grid.innerHTML = '';
+
+    let currentChapter = null;
+    levels.forEach((config) => {
+      if (config.chapter !== currentChapter) {
+        currentChapter = config.chapter;
+        const heading = document.createElement('h3');
+        heading.className = 'education-chapter-title';
+        heading.textContent = dict[config.chapterKey] || config.chapterKey;
+        grid.appendChild(heading);
+      }
+
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'education-level-card';
+      button.dataset.educationLevel = String(config.id);
+      if (completed.has(config.id)) button.classList.add('completed');
+
+      const number = document.createElement('span');
+      number.className = 'education-level-number';
+      number.textContent = completed.has(config.id) ? '✓' : String(config.id);
+
+      const copy = document.createElement('span');
+      copy.className = 'education-level-copy';
+      copy.textContent = dict[config.nameKey] || config.nameKey;
+
+      button.appendChild(number);
+      button.appendChild(copy);
+      grid.appendChild(button);
+    });
+  }
+
   // == 視圖控制 ==
 
   hideAllMenus() {
@@ -487,6 +562,7 @@ class UIManager {
   showEducationLevelMenu() {
     this.hideHUD();
     this.hideEducationHUD();
+    this._buildEducationLevelMenu();
     this.showMenu('educationLevels');
     setTimeout(() => {
       const firstLevel = this.menus.educationLevels?.querySelector('[data-education-level]');
@@ -520,10 +596,21 @@ class UIManager {
   _renderEducationHeader(config) {
     const dict = this._educationDictionary();
     if (this.elements.educationKicker) {
-      this.elements.educationKicker.textContent = dict[config.titleKey] || config.titleKey;
+      const prefix = dict.edu_level_prefix || '🧩 小小探險家 · 第';
+      const suffix = dict.edu_level_suffix ?? '關';
+      this.elements.educationKicker.textContent = `${prefix} ${config.id}${suffix ? ` ${suffix}` : ''}`;
     }
     if (this.elements.educationRule) {
       this.elements.educationRule.textContent = dict[config.ruleKey] || config.ruleKey;
+    }
+    if (this.elements.educationClueCard) {
+      this.elements.educationClueCard.classList.remove('attention');
+    }
+    if (this.elements.educationSequence) {
+      this.elements.educationSequence.setAttribute('aria-label', dict.edu_sequence_label || '線索順序');
+    }
+    if (this.elements.educationReferenceSequence) {
+      this.elements.educationReferenceSequence.setAttribute('aria-label', dict.edu_reference_label || '參考線索');
     }
 
     const hasReference = Array.isArray(config.referenceSequence);
@@ -539,12 +626,21 @@ class UIManager {
         config.referenceSequence,
         config.referenceSequence,
         config.referenceSequence.length,
-        false
+        false,
+        config
       );
+    }
+
+    this._renderPlaceValueClue(config);
+    if (this.elements.btnEducationSpeak) {
+      const canSpeak = config.speechEnabled
+        && 'speechSynthesis' in window
+        && typeof SpeechSynthesisUtterance !== 'undefined';
+      this.elements.btnEducationSpeak.classList.toggle('hidden', !canSpeak);
     }
   }
 
-  _renderEducationSequence(container, actualValues, displayValues, completedCount, showCurrent = true) {
+  _renderEducationSequence(container, actualValues, displayValues, completedCount, showCurrent = true, config = null) {
     if (!container) return;
     container.innerHTML = '';
 
@@ -561,11 +657,76 @@ class UIManager {
       chip.className = 'education-number';
       const isCompleted = index < completedCount;
       const displayedValue = isCompleted ? value : displayValues[index];
-      chip.textContent = displayedValue === null ? '?' : String(displayedValue);
+      this._applyEducationTokenToChip(chip, displayedValue, isCompleted);
       chip.dataset.index = String(index);
       chip.classList.toggle('completed', isCompleted);
       chip.classList.toggle('current', showCurrent && index === completedCount);
+      if (config?.taskType === 'place-value') chip.classList.add('place-value-token');
       container.appendChild(chip);
+    });
+  }
+
+  _educationTokenMeta(value) {
+    const colors = window.EDUCATION_COLOR_TOKENS || {};
+    if (typeof value === 'string' && colors[value]) {
+      return { kind: 'color', colorKey: value, ...colors[value] };
+    }
+    if (typeof value === 'string' && value.includes(':')) {
+      const [number, colorKey] = value.split(':');
+      if (colors[colorKey]) return { kind: 'mixed', number, colorKey, ...colors[colorKey] };
+    }
+    return { kind: 'number', label: String(value) };
+  }
+
+  _applyEducationTokenToChip(chip, value, isCompleted = false) {
+    if (value === null || value === undefined) {
+      chip.textContent = '?';
+      return;
+    }
+
+    const token = this._educationTokenMeta(value);
+    const dict = this._educationDictionary();
+    if (token.kind === 'color') {
+      chip.classList.add('education-color-token');
+      chip.textContent = token.shape;
+      chip.title = dict[token.labelKey] || token.colorKey;
+      chip.style.backgroundColor = token.color;
+      chip.style.color = token.textColor;
+    } else if (token.kind === 'mixed') {
+      chip.classList.add('education-color-token', 'education-mixed-token');
+      chip.textContent = `${token.number}${token.shape}`;
+      chip.title = `${token.number} · ${dict[token.labelKey] || token.colorKey}`;
+      chip.style.backgroundColor = token.color;
+      chip.style.color = token.textColor;
+    } else {
+      chip.textContent = token.label;
+    }
+  }
+
+  _renderPlaceValueClue(config) {
+    const container = this.elements.educationPlaceValue;
+    if (!container) return;
+    const values = config.focusValues || [];
+    container.innerHTML = '';
+    container.classList.toggle('hidden', values.length === 0);
+    if (values.length === 0) return;
+
+    const dict = this._educationDictionary();
+    values.forEach((value) => {
+      const numericValue = Number(value);
+      if (!Number.isFinite(numericValue)) return;
+      const tens = Math.floor(numericValue / 10);
+      const ones = numericValue % 10;
+      const tenLabel = tens === 1
+        ? (dict.edu_ten_group_single || dict.edu_ten_groups || '個十')
+        : (dict.edu_ten_groups || '個十');
+      const oneLabel = ones === 1
+        ? (dict.edu_one_unit_single || dict.edu_one_units || '個一')
+        : (dict.edu_one_units || '個一');
+      const row = document.createElement('div');
+      row.className = 'education-place-row';
+      row.innerHTML = `<span class="place-number">${value}</span><span class="place-box tens"><small>${dict.edu_tens || '十位'}</small>${tens}</span><span class="place-box ones"><small>${dict.edu_ones || '個位'}</small>${ones}</span><span class="place-equation">${tens}${tenLabel}＋${ones}${oneLabel}</span>`;
+      container.appendChild(row);
     });
   }
 
@@ -580,29 +741,42 @@ class UIManager {
       this.elements.educationSequence,
       config.sequence,
       config.displaySequence,
-      completedCount
+      completedCount,
+      true,
+      config
     );
 
     if (!this.elements.educationNext) return;
     const dict = this._educationDictionary();
     this.elements.educationNext.classList.remove('nudge');
     if (completedCount >= config.sequence.length) {
-      this.elements.educationNext.textContent = dict.edu_all_done || '全部完成！';
+      this.elements.educationNext.textContent = dict.edu_gate_open || '出口打開了！找到發光出口。';
       return;
     }
 
     const nextIsHidden = config.displaySequence[completedCount] === null;
+    const nextLabel = this._formatEducationValue(config.sequence[completedCount]);
     this.elements.educationNext.textContent = nextIsHidden
-      ? (dict.edu_find_missing || '想一想：下一個數字是？')
-      : `${dict.edu_next || '下一個：'}${config.sequence[completedCount]}`;
+      ? (dict.edu_find_missing || '想一想：下一個是什麼？')
+      : `${dict.edu_next || '下一個：'}${nextLabel}`;
   }
 
-  showEducationNudge(config) {
+  showEducationNudge(config, wrongAttempts = 1) {
     if (!config || !this.elements.educationNext) return;
     if (this._educationNudgeTimer) clearTimeout(this._educationNudgeTimer);
 
     const dict = this._educationDictionary();
-    this.elements.educationNext.textContent = dict[config.nudgeKey] || dict.edu_try_again || '再想一想。';
+    const message = wrongAttempts >= 3
+      ? (dict.edu_test_marked || '這個選項先做記號，再看看線索。')
+      : wrongAttempts >= 2
+        ? (dict.edu_check_clue || '回頭看看線索卡。')
+        : (dict[config.nudgeKey] || dict.edu_try_again || '再想一想。');
+    this.elements.educationNext.textContent = message;
+    if (wrongAttempts >= 2 && this.elements.educationClueCard) {
+      this.elements.educationClueCard.classList.remove('attention');
+      void this.elements.educationClueCard.offsetWidth;
+      this.elements.educationClueCard.classList.add('attention');
+    }
     this.elements.educationNext.classList.remove('nudge');
     void this.elements.educationNext.offsetWidth;
     this.elements.educationNext.classList.add('nudge');
@@ -611,20 +785,76 @@ class UIManager {
       this._educationNudgeTimer = null;
       const manager = this.game.educationManager;
       if (this.game.mode === 'education' && manager && manager.config.id === config.id) {
-        this.updateEducationProgress(manager.expectedIndex, config);
+        if (manager.gateUnlocked) this.showEducationGateUnlocked(config);
+        else this.updateEducationProgress(manager.expectedIndex, config);
       }
     }, 1600);
   }
 
-  showEducationComplete(config, hasNext) {
+  showEducationGateUnlocked() {
+    if (!this.elements.educationNext) return;
+    const dict = this._educationDictionary();
+    this.elements.educationNext.classList.remove('nudge');
+    this.elements.educationNext.textContent = dict.edu_gate_open || '出口打開了！找到發光出口。';
+  }
+
+  _formatEducationValue(value) {
+    const token = this._educationTokenMeta(value);
+    const dict = this._educationDictionary();
+    if (token.kind === 'color') return `${token.shape} ${dict[token.labelKey] || token.colorKey}`;
+    if (token.kind === 'mixed') return `${token.number} ${token.shape}`;
+    return token.label;
+  }
+
+  _educationSequenceSummary(config) {
+    return config.sequence.map((value) => this._formatEducationValue(value)).join(' → ');
+  }
+
+  speakEducationClue() {
+    const manager = this.game.educationManager;
+    if (!manager || !manager.config.speechEnabled || !('speechSynthesis' in window)
+      || typeof SpeechSynthesisUtterance === 'undefined') return;
+    const rawValue = manager.sequence[Math.min(manager.expectedIndex, manager.sequence.length - 1)];
+    const value = Number(rawValue);
+    if (!Number.isFinite(value)) return;
+
+    const lang = gameSettings.language || 'zh';
+    const utterance = new SpeechSynthesisUtterance(lang === 'zh' ? this._numberToChinese(value) : String(value));
+    utterance.lang = lang === 'zh' ? 'zh-TW' : 'en-US';
+    utterance.rate = 0.82;
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utterance);
+  }
+
+  _numberToChinese(value) {
+    const digits = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
+    if (value < 10) return digits[value];
+    if (value === 10) return '十';
+    if (value < 20) return `十${digits[value % 10]}`;
+    if (value % 10 === 0) return `${digits[Math.floor(value / 10)]}十`;
+    return `${digits[Math.floor(value / 10)]}十${digits[value % 10]}`;
+  }
+
+  showEducationComplete(config, hasNext, stats = {}) {
     if (!config) return;
     const dict = this._educationDictionary();
     this.hideEducationHUD();
     if (this.elements.educationCompleteCopy) {
-      this.elements.educationCompleteCopy.textContent = dict[config.completeKey] || dict.edu_complete_copy;
+      const completeKey = config.taskType === 'color'
+        ? 'edu_complete_color'
+        : config.taskType === 'place-value'
+          ? 'edu_complete_place'
+          : config.taskType === 'mixed'
+            ? 'edu_complete_mixed'
+            : 'edu_complete_number';
+      this.elements.educationCompleteCopy.textContent = dict[completeKey] || dict.edu_complete_copy;
     }
     if (this.elements.educationCompleteSequence) {
-      this.elements.educationCompleteSequence.textContent = config.sequence.join(' → ');
+      this.elements.educationCompleteSequence.textContent = this._educationSequenceSummary(config);
+    }
+    if (this.elements.educationAchievement) {
+      const badgeKey = config.badgeKey || (stats.wrongAttempts > 0 ? 'edu_badge_brave_tester' : 'edu_badge_clue_reader');
+      this.elements.educationAchievement.textContent = dict[badgeKey] || dict.edu_badge_clue_reader || '🔍 線索偵探';
     }
     if (this.elements.btnEducationNext) {
       this.elements.btnEducationNext.classList.toggle('hidden', !hasNext);
@@ -1040,17 +1270,26 @@ class UIManager {
       const label = dict.pause || '暫停';
       this.elements.btnEducationPause.innerHTML = `<span data-i18n="pause">${label}</span> (ESC)`;
     }
+    this._buildEducationLevelMenu();
 
     const educationManager = this.game.educationManager;
     if (this.game.mode === 'education' && educationManager) {
       this._renderEducationHeader(educationManager.config);
       this.updateEducationProgress(educationManager.expectedIndex, educationManager.config);
+      if (educationManager.gateUnlocked) this.showEducationGateUnlocked(educationManager.config);
       if (educationManager.completed) {
         if (this.elements.educationCompleteCopy) {
-          this.elements.educationCompleteCopy.textContent = dict[educationManager.config.completeKey] || dict.edu_complete_copy;
+          const completeKey = educationManager.config.taskType === 'color'
+            ? 'edu_complete_color'
+            : educationManager.config.taskType === 'place-value'
+              ? 'edu_complete_place'
+              : educationManager.config.taskType === 'mixed'
+                ? 'edu_complete_mixed'
+                : 'edu_complete_number';
+          this.elements.educationCompleteCopy.textContent = dict[completeKey] || dict.edu_complete_copy;
         }
         if (this.elements.educationCompleteSequence) {
-          this.elements.educationCompleteSequence.textContent = educationManager.config.sequence.join(' → ');
+          this.elements.educationCompleteSequence.textContent = this._educationSequenceSummary(educationManager.config);
         }
       }
     }

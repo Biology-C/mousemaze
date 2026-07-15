@@ -207,6 +207,16 @@ body {
   margin-bottom: 18px;
 }
 
+.education-chapter-title {
+  grid-column: 1 / -1;
+  margin: 10px 0 0;
+  padding: 8px 10px;
+  border-bottom: 2px solid rgba(241, 196, 15, 0.45);
+  color: #f8c471;
+  font-size: 1rem;
+  text-align: left;
+}
+
 .education-level-card {
   display: flex;
   min-height: 64px;
@@ -227,6 +237,15 @@ body {
   border-color: #f1c40f;
   background: linear-gradient(180deg, #34495e, #1b2631);
   transform: translateY(-1px);
+}
+
+.education-level-card.completed {
+  border-color: #27ae60;
+  background: linear-gradient(180deg, #1e8449, #145a32);
+}
+
+.education-level-copy {
+  line-height: 1.25;
 }
 
 .education-level-number {
@@ -332,6 +351,23 @@ body {
   font-size: 1.2rem;
 }
 
+.education-clue-card {
+  margin: 4px 0 7px;
+  padding: 5px 10px;
+  border: 2px solid rgba(174, 214, 241, 0.65);
+  border-radius: 10px;
+  background: rgba(41, 128, 185, 0.16);
+}
+
+.education-clue-heading {
+  color: #aed6f1;
+  font-size: 0.78rem;
+}
+
+.education-clue-card.attention {
+  animation: educationClueAttention 0.45s ease-in-out 3 alternate;
+}
+
 .education-reference {
   display: flex;
   align-items: center;
@@ -389,9 +425,86 @@ body {
 }
 
 .education-number.current {
-  background: #f1c40f;
   border-color: #fff;
   animation: educationPulse 0.9s ease-in-out infinite alternate;
+}
+
+.education-number.current:not(.education-color-token) {
+  background: #f1c40f;
+}
+
+.education-color-token {
+  font-family: sans-serif;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.education-mixed-token {
+  width: 48px;
+  border-radius: 14px;
+  font-size: 1rem;
+}
+
+.place-value-token {
+  border-radius: 12px;
+}
+
+.education-place-value {
+  display: flex;
+  justify-content: center;
+  gap: 7px;
+  margin-top: 7px;
+}
+
+.education-place-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 6px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.place-number {
+  color: #f8c471;
+  font-size: 1.15rem;
+  font-weight: bold;
+}
+
+.place-box {
+  display: inline-flex;
+  min-width: 34px;
+  height: 34px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid rgba(255, 255, 255, 0.65);
+  border-radius: 6px;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.place-box small {
+  font-size: 0.56rem;
+}
+
+.place-box.tens { background: #2874a6; }
+.place-box.ones { background: #d35400; }
+
+.place-equation {
+  color: #d6eaf8;
+  font-size: 0.7rem;
+}
+
+.education-speak {
+  margin-top: 6px;
+  padding: 5px 10px;
+  border: 2px solid #85c1e9;
+  border-radius: 16px;
+  background: #1f618d;
+  color: #fff;
+  font-family: 'DotGothic16', sans-serif;
+  cursor: pointer;
+  pointer-events: auto;
 }
 
 .education-arrow {
@@ -438,6 +551,17 @@ body {
   font-weight: bold;
 }
 
+.education-achievement {
+  margin: -10px 0 20px;
+  padding: 9px 12px;
+  border: 2px solid #f1c40f;
+  border-radius: 18px;
+  background: rgba(241, 196, 15, 0.12);
+  color: #f8c471;
+  font-size: 1.15rem;
+  font-weight: bold;
+}
+
 @keyframes educationPulse {
   from { transform: scale(1); }
   to { transform: scale(1.14); }
@@ -446,6 +570,11 @@ body {
 @keyframes educationNudge {
   from { transform: translateX(-5px); }
   to { transform: translateX(5px); }
+}
+
+@keyframes educationClueAttention {
+  from { border-color: #aed6f1; transform: scale(1); }
+  to { border-color: #f1c40f; transform: scale(1.025); }
 }
 
 /* HUD 技能圖示計數（icon + dot 格子）*/
@@ -953,11 +1082,21 @@ body {
   }
 
   .education-kicker { font-size: 0.72rem; }
-  .education-rule { font-size: 0.9rem; margin-bottom: 4px; }
+  .education-rule { font-size: 0.82rem; margin-bottom: 2px; }
+  .education-clue-card { margin: 2px 0 4px; padding: 3px 6px; }
+  .education-clue-heading { font-size: 0.62rem; }
   .education-reference { gap: 4px; margin-bottom: 4px; }
   .education-reference-label { font-size: 0.68rem; }
   .education-sequence-reference .education-number { width: 23px; height: 23px; font-size: 0.78rem; }
   .education-number { width: 29px; height: 29px; font-size: 1rem; border-width: 2px; }
+  .education-mixed-token { width: 36px; font-size: 0.75rem; }
+  .education-place-value { gap: 3px; margin-top: 3px; }
+  .education-place-row { gap: 2px; padding: 2px 3px; }
+  .place-number { font-size: 0.8rem; }
+  .place-box { min-width: 25px; height: 25px; font-size: 0.75rem; border-width: 1px; }
+  .place-box small { font-size: 0.45rem; }
+  .place-equation { display: none; }
+  .education-speak { margin-top: 3px; padding: 3px 7px; font-size: 0.68rem; }
   .education-arrow { font-size: 0.9rem; }
   .education-next { margin-top: 4px; font-size: 0.9rem; }
   #btn-education-pause { font-size: 0.72rem; }

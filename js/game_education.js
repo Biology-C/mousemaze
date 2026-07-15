@@ -1,12 +1,33 @@
 /**
  * game_education.js
- * 將八關數列課程接入遊戲狀態與畫面流程。
+ * 將 20 關教育課程接入遊戲狀態、成就與畫面流程。
  */
 
 (() => {
   if (typeof Game === 'undefined' || typeof EducationLevel === 'undefined') return;
+  const EDUCATION_PROGRESS_KEY = 'maze_education_completed_levels';
+  const EDUCATION_SPEED_MULTIPLIER = 0.5;
 
   Object.assign(Game.prototype, {
+    getCompletedEducationLevels() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(EDUCATION_PROGRESS_KEY) || '[]');
+        return new Set(saved.filter((value) => Number.isInteger(value) && value > 0));
+      } catch (error) {
+        return new Set();
+      }
+    },
+
+    recordCompletedEducationLevel(levelNumber) {
+      const completed = this.getCompletedEducationLevels();
+      completed.add(Number(levelNumber));
+      try {
+        localStorage.setItem(EDUCATION_PROGRESS_KEY, JSON.stringify([...completed].sort((a, b) => a - b)));
+      } catch (error) {
+        // 儲存空間不可用時仍讓孩子正常完成關卡。
+      }
+    },
+
     openEducationMenu() {
       this.state = Game.STATE_MENU;
       this.timer.pause();
@@ -53,6 +74,7 @@
         { sightRadius: 20, hintRange: 0 }
       );
       this.player.educationMode = true;
+      this.player.speed *= EDUCATION_SPEED_MULTIPLIER;
       this.player.drillCount = 0;
       this.player.hintCount = 0;
 
@@ -86,8 +108,11 @@
       this.player.disableControl();
       if (window.audioManager) window.audioManager.playVictory();
       const config = this.educationManager.config;
+      this.recordCompletedEducationLevel(config.id);
       const hasNext = config.id < (window.EDUCATION_LEVELS || []).length;
-      this.ui.showEducationComplete(config, hasNext);
+      this.ui.showEducationComplete(config, hasNext, {
+        wrongAttempts: this.educationManager.wrongAttempts
+      });
       this.ui.checkMobileControls();
     },
 
@@ -101,6 +126,7 @@
         this._educationPreviousCellSize = undefined;
       }
       this.educationManager = null;
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
       this.ui.hideEducationHUD();
       this.ui.hideMenu('educationComplete');
       if (this.ui.elements.mobileControls) {
